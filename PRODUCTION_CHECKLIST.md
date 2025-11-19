@@ -6,6 +6,7 @@
 - [x] Variáveis de ambiente configuradas corretamente
 - [x] Supabase integrado e banco criado
 - [x] Scripts SQL executados (tabelas, funções, triggers)
+- [x] Script 004_add_payment_deadline.sql executado (adiciona datas à rodada)
 - [x] RLS (Row Level Security) habilitado em todas as tabelas
 - [x] Políticas de segurança configuradas
 - [x] TypeScript build sem erros
@@ -28,12 +29,12 @@
 ### Funcionalidades Testadas
 - [x] Sistema de login/logout
 - [x] Cadastro de jogadores
-- [x] Criação de rodadas (Quina e Mega Sena)
+- [x] Criação de rodadas (Quina e Mega Sena) com data de início e limite de pagamento
 - [x] Registro de apostas
 - [x] Adição de sorteios
 - [x] Cálculo automático de resultados
-- [x] Sistema de pagamentos
-- [x] Relatórios (impressão/PDF)
+- [x] Sistema de pagamentos (marcar como pago e cancelar confirmação)
+- [x] Relatórios com datas de início e limite de pagamento
 - [x] Sistema de backup/restauração
 - [x] Permissões (visitantes vs autenticados)
 
@@ -58,11 +59,13 @@
 ### Testes em Produção
 - [ ] Acessar URL de produção
 - [ ] Testar login/logout
-- [ ] Criar uma rodada de teste
+- [ ] Criar uma rodada de teste (com datas)
 - [ ] Adicionar aposta de teste
+- [ ] Marcar pagamento como pago
+- [ ] Cancelar confirmação de pagamento
 - [ ] Registrar sorteio de teste
 - [ ] Verificar cálculo de resultados
-- [ ] Testar impressão de relatórios
+- [ ] Testar impressão de relatórios (verificar datas)
 - [ ] Verificar backup/exportação
 
 ### Monitoramento
@@ -98,6 +101,14 @@ npm run dev
 ### Erro: Supabase connection failed
 **Causa**: Variáveis de ambiente incorretas
 **Solução**: Verificar .env.local e variáveis no servidor
+
+### Erro: Datas não aparecem nos relatórios
+**Causa**: Migration 004 não foi executada no banco
+**Solução**:
+\`\`\`bash
+# Execute o script na aba Scripts ou diretamente no Supabase
+# scripts/004_add_payment_deadline.sql
+\`\`\`
 
 ## Contatos de Emergência
 

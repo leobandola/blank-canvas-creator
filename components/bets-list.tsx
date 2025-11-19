@@ -121,8 +121,8 @@ export function BetsList({ bets, roundId, isAuthenticated, lotteryType }: { bets
                   {isAuthenticated && (
                     <div className="flex gap-2">
                       <EditBetDialog bet={bet} lotteryType={lotteryType} />
-                      {!isPaid && payment && (
-                        <MarkPaidDialog paymentId={payment.id} />
+                      {payment && (
+                        <MarkPaidDialog paymentId={payment.id} isPaid={isPaid} />
                       )}
                       <Button
                         variant="ghost"

@@ -12,30 +12,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DollarSign } from 'lucide-react';
+import { DollarSign, XCircle } from 'lucide-react';
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from 'next/navigation';
 
-export function MarkPaidDialog({ paymentId }: { paymentId: string }) {
+export function MarkPaidDialog({ paymentId, isPaid = false }: { paymentId: string; isPaid?: boolean }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  const handleMarkPaid = async () => {
+  const handleTogglePayment = async () => {
     setIsLoading(true);
 
     const { error } = await supabase
       .from("payments")
       .update({
-        status: "paid",
-        payment_date: new Date().toISOString(),
+        status: isPaid ? "pending" : "paid",
+        payment_date: isPaid ? null : new Date().toISOString(),
       })
       .eq("id", paymentId);
 
     if (error) {
-      console.error("Error marking payment as paid:", error);
-      alert("Erro ao marcar como pago: " + error.message);
+      console.error("Error updating payment:", error);
+      alert("Erro ao atualizar pagamento: " + error.message);
     } else {
       router.refresh();
     }
@@ -46,26 +46,38 @@ export function MarkPaidDialog({ paymentId }: { paymentId: string }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-          <DollarSign className="h-4 w-4 mr-1" />
-          Marcar como Pago
-        </Button>
+        {isPaid ? (
+          <Button size="sm" variant="outline" className="border-red-600 text-red-600 hover:bg-red-50">
+            <XCircle className="h-4 w-4 mr-1" />
+            Cancelar Pagamento
+          </Button>
+        ) : (
+          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+            <DollarSign className="h-4 w-4 mr-1" />
+            Marcar como Pago
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar Pagamento</AlertDialogTitle>
+          <AlertDialogTitle>
+            {isPaid ? "Cancelar Confirmação de Pagamento" : "Confirmar Pagamento"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Deseja marcar este pagamento como pago? A data de pagamento será registrada como hoje.
+            {isPaid 
+              ? "Deseja cancelar a confirmação deste pagamento? O status voltará para pendente."
+              : "Deseja marcar este pagamento como pago? A data de pagamento será registrada como hoje."
+            }
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleMarkPaid}
+            onClick={handleTogglePayment}
             disabled={isLoading}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className={isPaid ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700"}
           >
-            {isLoading ? "Marcando..." : "Confirmar"}
+            {isLoading ? "Processando..." : "Confirmar"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

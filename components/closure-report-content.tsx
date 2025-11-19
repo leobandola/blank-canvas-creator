@@ -10,6 +10,7 @@ type Round = {
   lottery_type: string;
   status: string;
   start_date: string;
+  payment_deadline?: string;
 };
 
 type BetWithPayment = {
@@ -97,8 +98,24 @@ export function ClosureReportContent({
             </div>
             <div>
               <span className="font-semibold">Data de Início:</span>{' '}
-              {new Date(round.start_date).toLocaleDateString('pt-BR')}
+              {new Date(round.start_date).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })}
             </div>
+            {round.payment_deadline && (
+              <div>
+                <span className="font-semibold">Limite para Pagamento:</span>{' '}
+                <span className="text-amber-600 font-bold">
+                  {new Date(round.payment_deadline).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -10,6 +10,7 @@ type Round = {
   lottery_type: string;
   status: string;
   start_date: string;
+  payment_deadline?: string;
 };
 
 type BetWithRelations = {
@@ -105,8 +106,24 @@ export function ReportContent({
             </div>
             <div>
               <span className="font-semibold">Data de Início:</span>{' '}
-              {new Date(round.start_date).toLocaleDateString('pt-BR')}
+              {new Date(round.start_date).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })}
             </div>
+            {round.payment_deadline && (
+              <div>
+                <span className="font-semibold">Limite para Pagamento:</span>{' '}
+                <span className="text-amber-600 font-bold">
+                  {new Date(round.payment_deadline).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -242,7 +259,11 @@ export function ReportContent({
         <CardContent>
           <ul className="list-disc list-inside space-y-1 text-sm">
             <li>Este relatório deve ser enviado aos jogadores antes do início da rodada</li>
-            <li>Todos os pagamentos devem ser confirmados antes do primeiro sorteio</li>
+            {round.payment_deadline && (
+              <li className="font-semibold text-amber-700">
+                Todos os pagamentos devem ser confirmados até {new Date(round.payment_deadline).toLocaleDateString('pt-BR')}
+              </li>
+            )}
             <li>Jogadores com pagamento pendente devem regularizar sua situação</li>
             <li>Confira os números apostados para evitar erros</li>
           </ul>

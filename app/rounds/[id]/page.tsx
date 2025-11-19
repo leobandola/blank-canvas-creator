@@ -102,6 +102,30 @@ export default async function RoundDetailPage({
               </div>
             </CardHeader>
             <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 mb-4">
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground mb-1">Data de Início da Rodada</p>
+                  <p className="text-lg font-medium">
+                    {new Date(round.start_date).toLocaleDateString("pt-BR", {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+                {round.payment_deadline && (
+                  <div>
+                    <p className="text-sm font-semibold text-muted-foreground mb-1">Limite para Pagamento</p>
+                    <p className="text-lg font-medium text-amber-600">
+                      {new Date(round.payment_deadline).toLocaleDateString("pt-BR", {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Trophy className="h-4 w-4" />
                 <span>
@@ -112,7 +136,7 @@ export default async function RoundDetailPage({
           </Card>
         </div>
 
-        <BetsList bets={bets || []} roundId={id} isAuthenticated={!!user} />
+        <BetsList bets={bets || []} roundId={id} isAuthenticated={!!user} lotteryType={round.lottery_type} />
       </div>
     </div>
   );
