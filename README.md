@@ -1,30 +1,223 @@
-# Lottery pool management
+# Sistema de Gestão de Bolões
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Sistema completo para gerenciamento de bolões de loteria (Quina e Mega Sena), desenvolvido com Next.js 16, React 19, Supabase e Tailwind CSS.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/alootelecombh-1544s-projects/v0-lottery-pool-management)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/erIvTSvrfss)
+## Funcionalidades
 
-## Overview
+### Gerenciamento de Jogadores
+- Cadastro completo de jogadores com nome, email e telefone
+- Listagem e busca de jogadores
+- Edição e exclusão de jogadores
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+### Gerenciamento de Rodadas
+- Criação de rodadas para Quina (1-80) ou Mega Sena (1-60)
+- Status de rodadas (Ativa/Finalizada)
+- Definição de datas de início, fim e prazo de pagamento
+- Visualização detalhada de cada rodada
 
-## Deployment
+### Sistema de Apostas
+- Registro de apostas com seleção de números
+- Controle de pagamentos (Pendente/Pago)
+- Visualização de apostas por rodada e por jogador
+- Edição de apostas antes dos sorteios
 
-Your project is live at:
+### Sorteios e Resultados
+- Registro de resultados de sorteios
+- Cálculo automático de acertos
+- Acumulação de acertos por aposta
+- Conferência de números sorteados
 
-**[https://vercel.com/alootelecombh-1544s-projects/v0-lottery-pool-management](https://vercel.com/alootelecombh-1544s-projects/v0-lottery-pool-management)**
+### Sistema de Premiações
+Implementa as seguintes regras automáticas:
+- **Prêmio Principal (10 acertos)**: Primeiro a completar 10 acertos acumulativos
+- **2ª Colocação**: Maior número de acertos (9, 8, 7...)
+- **Prêmio Zero Acerto**: Quem não acertou nenhum número
+- **Bônus Diário**: Mais acertos no sorteio do dia (primeiros 7 sorteios)
 
-## Build your app
+### Relatórios
+- Relatório de pagamentos por rodada (para impressão/PDF)
+- Relatório de fechamento de rodada com resultados
+- Ranking de apostas por rodada
+- Histórico completo de sorteios
 
-Continue building your app on:
+### Sistema de Backup
+- Exportação completa de dados em JSON
+- Importação de backups anteriores
+- Proteção de dados com confirmação
 
-**[https://v0.app/chat/erIvTSvrfss](https://v0.app/chat/erIvTSvrfss)**
+### Autenticação
+- Sistema de login/cadastro com Supabase Auth
+- Controle de acesso por usuário
+- Middleware de autenticação
+- Visitantes podem visualizar, apenas usuários autenticados podem editar
 
-## How It Works
+## Tecnologias Utilizadas
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- **Framework**: Next.js 16.0.3 (App Router com Turbopack)
+- **React**: 19.2.0 com Server Components
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Autenticação**: Supabase Auth
+- **Estilização**: Tailwind CSS v4 + shadcn/ui
+- **Validação**: Zod + React Hook Form
+- **Ícones**: Lucide React
+- **TypeScript**: 5.x
+
+## Estrutura do Projeto
+
+\`\`\`
+├── app/                      # Next.js App Router
+│   ├── (auth)/              # Rotas de autenticação
+│   │   ├── login/
+│   │   └── signup/
+│   ├── backup/              # Sistema de backup
+│   ├── draws/               # Sorteios
+│   ├── players/             # Jogadores
+│   ├── prizes/              # Premiações
+│   ├── rounds/              # Rodadas
+│   │   └── [id]/           # Detalhes da rodada
+│   │       ├── closure/    # Relatório de fechamento
+│   │       └── report/     # Relatório de pagamentos
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/              # Componentes React
+│   ├── ui/                 # Componentes shadcn/ui
+│   └── ...                 # Componentes da aplicação
+├── lib/                     # Utilitários e configurações
+│   ├── auth.ts             # Funções de autenticação
+│   ├── supabase/           # Clientes Supabase
+│   ├── types.ts            # Definições TypeScript
+│   └── utils.ts            # Funções utilitárias
+├── scripts/                 # Scripts SQL do banco
+│   ├── 001_create_tables.sql
+│   ├── 002_create_functions.sql
+│   └── 003_seed_sample_data.sql
+└── middleware.ts            # Middleware de autenticação
+\`\`\`
+
+## Configuração e Instalação
+
+### Pré-requisitos
+- Node.js 18+ instalado
+- Conta no Supabase (gratuita)
+- npm ou yarn
+
+### Passo 1: Clone o repositório
+\`\`\`bash
+git clone <repository-url>
+cd lottery-pool-management
+\`\`\`
+
+### Passo 2: Instale as dependências
+\`\`\`bash
+npm install
+\`\`\`
+
+### Passo 3: Configure as variáveis de ambiente
+Copie o arquivo `.env.example` para `.env.local` e preencha com suas credenciais do Supabase:
+
+\`\`\`bash
+cp .env.example .env.local
+\`\`\`
+
+### Passo 4: Configure o banco de dados
+Execute os scripts SQL no Supabase SQL Editor na seguinte ordem:
+1. `scripts/001_create_tables.sql` - Cria as tabelas
+2. `scripts/002_create_functions.sql` - Cria funções e triggers
+3. `scripts/003_seed_sample_data.sql` - Dados de exemplo (opcional)
+
+### Passo 5: Execute o projeto
+\`\`\`bash
+# Desenvolvimento
+npm run dev
+
+# Produção
+npm run build
+npm start
+\`\`\`
+
+O projeto estará disponível em `http://localhost:3000`
+
+## Deploy em Produção
+
+### Vercel (Recomendado)
+1. Conecte seu repositório GitHub à Vercel
+2. Configure as variáveis de ambiente no painel da Vercel
+3. Deploy automático a cada push
+
+### Servidor VPS com Apache/Nginx
+1. Build da aplicação:
+\`\`\`bash
+npm run build
+\`\`\`
+
+2. Configure PM2 para manter o app rodando:
+\`\`\`bash
+npm install -g pm2
+pm2 start npm --name "lottery-pool" -- start
+pm2 save
+pm2 startup
+\`\`\`
+
+3. Configure proxy reverso (Apache/Nginx) para a porta 3000
+
+Consulte o arquivo `DEPLOY_GUIDE.md` para instruções detalhadas.
+
+## Segurança
+
+### Row Level Security (RLS)
+Todas as tabelas possuem RLS habilitado com políticas adequadas para proteger os dados.
+
+### Autenticação
+- Senhas criptografadas pelo Supabase Auth
+- Tokens JWT para sessões
+- Refresh tokens automático via middleware
+- Proteção de rotas sensíveis
+
+### Validações
+- Validação de formulários com Zod
+- Sanitização de inputs
+- Verificação de permissões no servidor
+
+## Estrutura do Banco de Dados
+
+### Tabelas Principais
+- `players` - Jogadores cadastrados
+- `rounds` - Rodadas de apostas
+- `bets` - Apostas dos jogadores
+- `draws` - Sorteios realizados
+- `results` - Resultados de cada aposta por sorteio
+- `payments` - Controle de pagamentos
+- `winners` - Vencedores e premiações
+
+### Funções e Triggers
+- `update_accumulated_matches()` - Calcula acertos acumulados automaticamente
+- `calculate_matches()` - Calcula acertos de uma aposta
+- `get_round_leaderboard()` - Retorna ranking de uma rodada
+
+## Scripts Disponíveis
+
+\`\`\`bash
+npm run dev          # Inicia servidor de desenvolvimento
+npm run build        # Cria build de produção
+npm start            # Inicia servidor de produção
+npm run lint         # Executa linter
+npm run clean        # Limpa cache do Next.js
+\`\`\`
+
+## Suporte e Manutenção
+
+### Backup Regular
+Recomendamos fazer backup dos dados semanalmente através do sistema de backup integrado ou diretamente no Supabase.
+
+### Monitoramento
+- Logs do Next.js disponíveis no servidor
+- Dashboard do Supabase para monitorar banco de dados
+- Vercel Analytics (se hospedado na Vercel)
+
+## Licença
+
+Este projeto é privado e proprietário. Todos os direitos reservados.
+
+## Contato
+
+Para suporte ou dúvidas, entre em contato através do sistema de suporte.
