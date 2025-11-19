@@ -13,12 +13,15 @@ Sistema completo para gerenciamento de bolões de loteria (Quina e Mega Sena), d
 - Criação de rodadas para Quina (1-80) ou Mega Sena (1-60)
 - Status de rodadas (Ativa/Finalizada)
 - Definição de datas de início, fim e prazo de pagamento
+- **Configuração de valores de premiação por rodada**
 - Visualização detalhada de cada rodada
 
 ### Sistema de Apostas
 - Registro de apostas com seleção de números
 - Controle de pagamentos (Pendente/Pago)
+- **Opção de cancelar confirmação de pagamento**
 - Visualização de apostas por rodada e por jogador
+- **Exibição de datas de início e limite de pagamento**
 - Edição de apostas antes dos sorteios
 
 ### Sorteios e Resultados
@@ -26,6 +29,7 @@ Sistema completo para gerenciamento de bolões de loteria (Quina e Mega Sena), d
 - Cálculo automático de acertos
 - Acumulação de acertos por aposta
 - Conferência de números sorteados
+- **Relatório visual de distribuição de acertos**
 
 ### Sistema de Premiações
 Implementa as seguintes regras automáticas:
@@ -33,12 +37,23 @@ Implementa as seguintes regras automáticas:
 - **2ª Colocação**: Maior número de acertos (9, 8, 7...)
 - **Prêmio Zero Acerto**: Quem não acertou nenhum número
 - **Bônus Diário**: Mais acertos no sorteio do dia (primeiros 7 sorteios)
+- **Prêmio Indicação**: Configurável por rodada
+
+Valores de premiação configuráveis:
+- Prêmio 10 acertos (principal)
+- Prêmio 2ª colocação
+- Prêmio zero acertos ou menos
+- Prêmio por acertos em cada sorteio
+- Prêmio indicação
+- Total da premiação distribuída
 
 ### Relatórios
+- **Relatório de Distribuição de Acertos**: Tabela mostrando quantos jogos têm cada quantidade de acertos
 - Relatório de pagamentos por rodada (para impressão/PDF)
 - Relatório de fechamento de rodada com resultados
 - Ranking de apostas por rodada
 - Histórico completo de sorteios
+- **Todos os relatórios exibem datas de início e limite de pagamento**
 
 ### Sistema de Backup
 - Exportação completa de dados em JSON
@@ -71,6 +86,10 @@ Implementa as seguintes regras automáticas:
 │   │   └── signup/
 │   ├── backup/              # Sistema de backup
 │   ├── draws/               # Sorteios
+│   │   └── [roundId]/
+│   │       ├── page.tsx           # Lista de sorteios
+│   │       ├── statistics/        # Relatório de distribuição de acertos
+│   │       └── results/[drawId]/  # Resultados detalhados
 │   ├── players/             # Jogadores
 │   ├── prizes/              # Premiações
 │   ├── rounds/              # Rodadas
@@ -90,7 +109,9 @@ Implementa as seguintes regras automáticas:
 ├── scripts/                 # Scripts SQL do banco
 │   ├── 001_create_tables.sql
 │   ├── 002_create_functions.sql
-│   └── 003_seed_sample_data.sql
+│   ├── 003_seed_sample_data.sql
+│   ├── 004_add_payment_deadline.sql
+│   └── 005_add_prize_configuration.sql
 └── middleware.ts            # Middleware de autenticação
 \`\`\`
 
@@ -124,6 +145,8 @@ Execute os scripts SQL no Supabase SQL Editor na seguinte ordem:
 1. `scripts/001_create_tables.sql` - Cria as tabelas
 2. `scripts/002_create_functions.sql` - Cria funções e triggers
 3. `scripts/003_seed_sample_data.sql` - Dados de exemplo (opcional)
+4. `scripts/004_add_payment_deadline.sql` - Adiciona campos de datas
+5. `scripts/005_add_prize_configuration.sql` - Adiciona campos de premiação
 
 ### Passo 5: Execute o projeto
 \`\`\`bash
@@ -182,7 +205,7 @@ Todas as tabelas possuem RLS habilitado com políticas adequadas para proteger o
 
 ### Tabelas Principais
 - `players` - Jogadores cadastrados
-- `rounds` - Rodadas de apostas
+- `rounds` - Rodadas de apostas (com campos de premiação)
 - `bets` - Apostas dos jogadores
 - `draws` - Sorteios realizados
 - `results` - Resultados de cada aposta por sorteio

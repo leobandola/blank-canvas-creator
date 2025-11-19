@@ -16,6 +16,12 @@ export type Round = {
   end_date: string | null;
   payment_deadline?: string | null;
   round_start_date?: string | null;
+  prize_10_hits?: number | null;
+  prize_2nd_place?: number | null;
+  prize_zero_hits?: number | null;
+  prize_per_draw?: number | null;
+  prize_indication?: number | null;
+  total_prize_pool?: number | null;
   created_at: string;
   updated_at: string;
 };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getUser } from '@/lib/auth';
 import { UserNav } from '@/components/user-nav';
@@ -73,9 +73,17 @@ export default async function DrawDetailPage({
                     </Badge>
                   </div>
                 </div>
-                {user && round.status === "active" && (
-                  <AddDrawDialog roundId={roundId} lotteryType={round.lottery_type} nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1} />
-                )}
+                <div className="flex gap-2">
+                  <Button asChild variant="outline" className="bg-purple-50 hover:bg-purple-100 border-purple-300">
+                    <Link href={`/draws/${roundId}/statistics`}>
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Relatório de Acertos
+                    </Link>
+                  </Button>
+                  {user && round.status === "active" && (
+                    <AddDrawDialog roundId={roundId} lotteryType={round.lottery_type} nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1} />
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
