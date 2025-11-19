@@ -13,16 +13,16 @@ import { UserNav } from '@/components/user-nav';
 export default async function DrawDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ roundId: string }>;
 }) {
-  const { id } = await params;
+  const { roundId } = await params;
   const supabase = await createClient();
   const user = await getUser();
 
   const { data: round, error: roundError } = await supabase
     .from("rounds")
     .select("*")
-    .eq("id", id)
+    .eq("id", roundId)
     .single();
 
   if (roundError || !round) {
@@ -32,7 +32,7 @@ export default async function DrawDetailPage({
   const { data: draws, error: drawsError } = await supabase
     .from("draws")
     .select("*")
-    .eq("round_id", id)
+    .eq("round_id", roundId)
     .order("draw_number", { ascending: false });
 
   if (drawsError) {
@@ -74,7 +74,7 @@ export default async function DrawDetailPage({
                   </div>
                 </div>
                 {user && round.status === "active" && (
-                  <AddDrawDialog roundId={id} lotteryType={round.lottery_type} nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1} />
+                  <AddDrawDialog roundId={roundId} lotteryType={round.lottery_type} nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1} />
                 )}
               </div>
             </CardHeader>
@@ -86,7 +86,7 @@ export default async function DrawDetailPage({
           </Card>
         </div>
 
-        <DrawsDetailList draws={draws || []} roundId={id} />
+        <DrawsDetailList draws={draws || []} roundId={roundId} />
       </div>
     </div>
   );
