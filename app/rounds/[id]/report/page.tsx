@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { getUser } from '@/lib/auth';
 import { UserNav } from '@/components/user-nav';
 import { ReportContent } from '@/components/report-content';
+import { PrintButton } from '@/components/print-button';
 
 export default async function RoundReportPage({
   params,
@@ -70,10 +71,7 @@ export default async function RoundReportPage({
               Voltar
             </Link>
           </Button>
-          <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700">
-            <Download className="h-4 w-4 mr-2" />
-            Baixar PDF
-          </Button>
+          <PrintButton />
         </div>
 
         <ReportContent

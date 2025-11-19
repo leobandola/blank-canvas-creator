@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { ClosureReportContent } from '@/components/closure-report-content';
 import { getUser } from '@/lib/auth';
 import { UserNav } from '@/components/user-nav';
+import { PrintButton } from '@/components/print-button';
 
 export default async function ClosureReportPage({
   params,
@@ -68,10 +69,7 @@ export default async function ClosureReportPage({
         </div>
 
         <div className="flex justify-end mb-4 no-print">
-          <Button onClick={() => window.print()}>
-            <Download className="h-4 w-4 mr-2" />
-            Baixar PDF
-          </Button>
+          <PrintButton />
         </div>
 
         <ClosureReportContent
