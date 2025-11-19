@@ -106,11 +106,13 @@ export default async function RoundDetailPage({
                 <div>
                   <p className="text-sm font-semibold text-muted-foreground mb-1">Data de Início da Rodada</p>
                   <p className="text-lg font-medium">
-                    {new Date(round.start_date).toLocaleDateString("pt-BR", {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
+                    {round.round_start_date 
+                      ? new Date(round.round_start_date).toLocaleDateString("pt-BR", {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric'
+                        })
+                      : 'Não definida'}
                   </p>
                 </div>
                 {round.payment_deadline && (

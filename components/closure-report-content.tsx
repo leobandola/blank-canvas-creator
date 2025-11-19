@@ -9,7 +9,8 @@ type Round = {
   name: string;
   lottery_type: string;
   status: string;
-  start_date: string;
+  created_at: string;
+  round_start_date?: string; // Adicionado campo round_start_date
   payment_deadline?: string;
 };
 
@@ -96,14 +97,16 @@ export function ClosureReportContent({
                 {round.status === 'active' ? 'Ativa' : 'Finalizada'}
               </Badge>
             </div>
-            <div>
-              <span className="font-semibold">Data de Início:</span>{' '}
-              {new Date(round.start_date).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              })}
-            </div>
+            {round.round_start_date && (
+              <div>
+                <span className="font-semibold">Data de Início:</span>{' '}
+                {new Date(round.round_start_date).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </div>
+            )}
             {round.payment_deadline && (
               <div>
                 <span className="font-semibold">Limite para Pagamento:</span>{' '}
