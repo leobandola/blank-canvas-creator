@@ -35,9 +35,10 @@ export async function signIn(email: string, password: string) {
     return { error: "Email ou senha incorretos" }
   }
 
-  // Verificação simples de senha (em produção use bcrypt)
-  // Por enquanto, aceitar qualquer senha para facilitar o acesso
-  // Você pode adicionar verificação de hash depois
+  // Verificação de senha - compara com password_hash
+  if (admin.password_hash !== password) {
+    return { error: "Email ou senha incorretos" }
+  }
 
   // Criar sessão
   const cookieStore = await cookies()
@@ -55,7 +56,7 @@ export async function signIn(email: string, password: string) {
     path: "/",
   })
 
-  redirect("/")
+  return { success: true }
 }
 
 export async function signUp(email: string, password: string, name: string) {
