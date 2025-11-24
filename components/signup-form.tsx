@@ -1,47 +1,50 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { signUp } from '@/lib/auth'
-import { Loader2, CheckCircle2 } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import type React from "react"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { signUp } from "@/lib/auth"
+import { Loader2, CheckCircle2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SignUpForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    
+    setError("")
+
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem')
+      setError("As senhas não coincidem")
       return
     }
 
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres')
+      setError("A senha deve ter pelo menos 6 caracteres")
       return
     }
 
     setLoading(true)
 
     try {
-      const result = await signUp(email, password)
+      const result = await signUp(email, password, name)
       if (result?.error) {
         setError(result.error)
       } else if (result?.success) {
         setSuccess(true)
       }
     } catch (err) {
-      setError('Erro ao criar conta')
+      setError("Erro ao criar conta")
     } finally {
       setLoading(false)
     }
@@ -54,8 +57,7 @@ export function SignUpForm() {
           <Alert className="bg-emerald-50 border-emerald-200">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             <AlertDescription className="text-emerald-800">
-              Conta criada com sucesso! Verifique seu email para confirmar seu cadastro.
-              Após a confirmação, você poderá fazer login.
+              Conta criada com sucesso! Você já pode fazer login.
             </AlertDescription>
           </Alert>
           <div className="mt-4 text-center">
@@ -72,12 +74,22 @@ export function SignUpForm() {
     <Card>
       <CardHeader>
         <CardTitle>Criar Conta</CardTitle>
-        <CardDescription>
-          Preencha os dados abaixo para criar sua conta de administrador
-        </CardDescription>
+        <CardDescription>Preencha os dados abaixo para criar sua conta de administrador</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Seu nome completo"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -126,6 +138,14 @@ export function SignUpForm() {
             Criar Conta
           </Button>
         </form>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Button variant="link" asChild className="p-0 h-auto">
+              <a href="/login">Fazer login</a>
+            </Button>
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

@@ -1,22 +1,25 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { signIn } from '@/lib/auth'
-import { Loader2 } from 'lucide-react'
+import type React from "react"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { signIn } from "@/lib/auth"
+import { Loader2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setError("")
     setLoading(true)
 
     try {
@@ -25,7 +28,7 @@ export function LoginForm() {
         setError(result.error)
       }
     } catch (err) {
-      setError('Erro ao fazer login')
+      setError("Erro ao fazer login")
     } finally {
       setLoading(false)
     }
@@ -35,9 +38,7 @@ export function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle>Login</CardTitle>
-        <CardDescription>
-          Entre com suas credenciais para acessar o sistema
-        </CardDescription>
+        <CardDescription>Entre com suas credenciais para acessar o sistema</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -65,7 +66,9 @@ export function LoginForm() {
             />
           </div>
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -74,7 +77,7 @@ export function LoginForm() {
         </form>
         <div className="mt-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Não tem uma conta?{' '}
+            Não tem uma conta?{" "}
             <Button variant="link" asChild className="p-0 h-auto">
               <a href="/signup">Criar conta</a>
             </Button>

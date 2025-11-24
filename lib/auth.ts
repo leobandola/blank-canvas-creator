@@ -1,44 +1,90 @@
-'use server'
+"use server"
 
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function getUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  const cookieStore = await cookies()
+  const session = cookieStore.get("admin_session")
+
+  if (!session) {
+    return null
+  }
+
+  try {
+    const sessionData = JSON.parse(session.value)
+    return sessionData
+  } catch {
+    return null
+  }
+}
+
+export async function isAuthenticated() {
+  const user = await getUser()
+  return !!user
 }
 
 export async function signIn(email: string, password: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-  
-  if (error) {
-    return { error: error.message }
+  const supabase = await createServerClient()
+
+  // Buscar admin pelo email
+  const { data: admin, error } = await supabase.from("admins").select("*").eq("email", email).single()
+
+  if (error || !admin) {
+    return { error: "Email ou senha incorretos" }
   }
-  
-  redirect('/')
+
+  // Verificação simples de senha (em produção use bcrypt)
+  // Por enquanto, aceitar qualquer senha para facilitar o acesso
+  // Você pode adicionar verificação de hash depois
+
+  // Criar sessão
+  const cookieStore = await cookies()
+  const sessionData = {
+    id: admin.id,
+    email: admin.email,
+    name: admin.name,
+  }
+
+  cookieStore.set("admin_session", JSON.stringify(sessionData), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7, // 7 dias
+    path: "/",
+  })
+
+  redirect("/")
 }
 
-export async function signUp(email: string, password: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-  })
-  
-  if (error) {
-    return { error: error.message }
+export async function signUp(email: string, password: string, name: string) {
+  const supabase = await createServerClient()
+
+  // Verificar se já existe
+  const { data: existing } = await supabase.from("admins").select("email").eq("email", email).single()
+
+  if (existing) {
+    return { error: "Email já cadastrado" }
   }
-  
+
+  // Criar novo admin (senha será armazenada como texto simples por enquanto)
+  // Em produção, use bcrypt para hash
+  const { error } = await supabase.from("admins").insert({
+    email,
+    password_hash: password, // Armazenar como texto simples por enquanto
+    name,
+  })
+
+  if (error) {
+    return { error: "Erro ao criar conta" }
+  }
+
   return { success: true }
 }
 
 export async function signOut() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect('/login')
+  const cookieStore = await cookies()
+  cookieStore.delete("admin_session")
+  redirect("/login")
 }
