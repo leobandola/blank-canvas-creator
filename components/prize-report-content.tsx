@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, Download, Trophy, Medal, Award, TrendingDown } from "lucide-react"
+import { ArrowLeft, Printer, Trophy, Medal, Award, TrendingDown } from "lucide-react"
 import { useRef, useState } from "react"
 
 type BetWithDetails = {
@@ -51,51 +51,8 @@ export function PrizeReportContent({
   const reportRef = useRef<HTMLDivElement>(null)
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
-  const handleDownloadPDF = async () => {
-    if (!reportRef.current) return
-
-    try {
-      setIsGeneratingPDF(true)
-
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")])
-
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      })
-
-      const imgData = canvas.toDataURL("image/png")
-      const pdf = new jsPDF("p", "mm", "a4")
-
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-      const imgWidth = canvas.width
-      const imgHeight = canvas.height
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
-      const imgX = (pdfWidth - imgWidth * ratio) / 2
-      const imgY = 10
-
-      let heightLeft = imgHeight * ratio
-      let position = imgY
-
-      pdf.addImage(imgData, "PNG", imgX, position, imgWidth * ratio, imgHeight * ratio)
-      heightLeft -= pdfHeight
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight * ratio
-        pdf.addPage()
-        pdf.addImage(imgData, "PNG", imgX, position, imgWidth * ratio, imgHeight * ratio)
-        heightLeft -= pdfHeight
-      }
-
-      pdf.save(`premiacao-${round.name.replace(/\s+/g, "-").toLowerCase()}.pdf`)
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error)
-      alert("Erro ao gerar PDF. Tente novamente.")
-    } finally {
-      setIsGeneratingPDF(false)
-    }
+  const handlePrint = () => {
+    window.print()
   }
 
   const playerBetCount = new Map<string, number>()
@@ -121,9 +78,9 @@ export function PrizeReportContent({
               Voltar
             </Link>
           </Button>
-          <Button onClick={handleDownloadPDF} className="bg-purple-600 hover:bg-purple-700" disabled={isGeneratingPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            {isGeneratingPDF ? "Gerando PDF..." : "Baixar PDF"}
+          <Button onClick={handlePrint} className="bg-purple-600 hover:bg-purple-700">
+            <Printer className="h-4 w-4 mr-2" />
+            Imprimir Relatório
           </Button>
         </div>
 

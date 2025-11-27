@@ -120,13 +120,13 @@ importers:
         specifier: 8.5.1
         version: 8.5.1(react@19.2.0)
       html2canvas:
-        specifier: latest
+        specifier: 1.4.1
         version: 1.4.1
       input-otp:
         specifier: 1.4.1
         version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       jspdf:
-        specifier: latest
+        specifier: 3.0.4
         version: 3.0.4
       lucide-react:
         specifier: ^0.454.0
