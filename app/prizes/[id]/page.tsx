@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Trophy, Award, TrendingDown, Gift, FileText, Download } from "lucide-react"
 import Link from "next/link"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export default async function PrizesPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
 
