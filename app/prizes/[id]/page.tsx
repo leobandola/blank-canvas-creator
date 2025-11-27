@@ -94,9 +94,15 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
 
   // Determinar vencedores
   const mainWinner = betResults.find((b) => b.total_matches >= 10)
-  const topBet = betResults.length > 0 ? betResults[0] : null
-  const bottomBet = betResults.length > 0 ? betResults[betResults.length - 1] : null
-  const zeroHitsBet = betResults.find((b) => b.total_matches === 0)
+
+  // Se não há vencedor com 10 acertos, o melhor colocado ganha o prêmio principal
+  const topScore = betResults.length > 0 ? betResults[0].total_matches : 0
+  const topWinners = betResults.filter((b) => b.total_matches === topScore)
+
+  // Prêmio de menor pontuação - pegar TODOS os empatados com menor pontuação
+  const bottomScore = betResults.length > 0 ? betResults[betResults.length - 1].total_matches : 0
+  const bottomWinners = betResults.filter((b) => b.total_matches === bottomScore)
+  const zeroHitsWinners = betResults.filter((b) => b.total_matches === 0)
 
   // Vencedores diários (primeiros 7 sorteios)
   const dailyWinners: { drawNumber: number; winners: { name: string; matches: number; matchedNumbers: number[] }[] }[] =
@@ -219,7 +225,7 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
         {/* Prêmios */}
         <div className="grid gap-6 mb-8">
           {/* Prêmio Principal - 10 Acertos */}
-          {mainWinner && (
+          {mainWinner ? (
             <Card className="bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl text-amber-900">
@@ -246,38 +252,46 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
                 </div>
               </CardContent>
             </Card>
+          ) : (
+            topWinners.length > 0 && (
+              <Card className="bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-2xl text-amber-900">
+                    <Trophy className="h-8 w-8 text-amber-600" />
+                    Prêmio Principal - Maior Número de Acertos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {topWinners.map((winner, idx) => (
+                      <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-amber-300" : ""}>
+                        <div className="text-3xl font-bold text-amber-900 mb-2">{winner.player_name}</div>
+                        <div className="text-lg text-amber-800 mb-3">
+                          {winner.total_matches} números acertados de 10
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {winner.bet_numbers.map((num) => (
+                            <span
+                              key={num}
+                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                                winner.matched_numbers.includes(num)
+                                  ? "bg-green-500 text-white"
+                                  : "bg-amber-200 text-amber-800"
+                              }`}
+                            >
+                              {num.toString().padStart(2, "0")}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )
           )}
 
-          {/* 2ª Colocação */}
-          {topBet && !mainWinner && (
-            <Card className="bg-gradient-to-r from-slate-100 to-gray-100 border-slate-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
-                  <Medal className="h-8 w-8 text-slate-600" />
-                  2ª Colocação - Maior Número de Acertos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-2">{topBet.player_name}</div>
-                <div className="text-lg text-slate-800 mb-3">{topBet.total_matches} números acertados de 10</div>
-                <div className="flex flex-wrap gap-2">
-                  {topBet.bet_numbers.map((num) => (
-                    <span
-                      key={num}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                        topBet.matched_numbers.includes(num) ? "bg-green-500 text-white" : "bg-slate-200 text-slate-800"
-                      }`}
-                    >
-                      {num.toString().padStart(2, "0")}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Prêmio Zero Acerto */}
-          {(zeroHitsBet || bottomBet) && (
+          {(zeroHitsWinners.length > 0 || bottomWinners.length > 0) && (
             <Card className="bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl text-blue-900">
@@ -286,26 +300,66 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-blue-900 mb-2">
-                  {zeroHitsBet?.player_name || bottomBet?.player_name}
+                <div className="space-y-4">
+                  {(zeroHitsWinners.length > 0 ? zeroHitsWinners : bottomWinners).map((winner, idx) => (
+                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-blue-300" : ""}>
+                      <div className="text-3xl font-bold text-blue-900 mb-2">{winner.player_name}</div>
+                      <div className="text-lg text-blue-800 mb-3">
+                        {winner.total_matches === 0
+                          ? "0 acertos - Não acertou nenhum número!"
+                          : `${winner.total_matches} acertos - Menor número de acertos`}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {winner.bet_numbers.map((num) => (
+                          <span
+                            key={num}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                              winner.matched_numbers.includes(num)
+                                ? "bg-green-500 text-white"
+                                : "bg-blue-200 text-blue-800"
+                            }`}
+                          >
+                            {num.toString().padStart(2, "0")}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="text-lg text-blue-800 mb-3">
-                  {zeroHitsBet
-                    ? "0 acertos - Não acertou nenhum número!"
-                    : `${bottomBet?.total_matches} acertos - Menor número de acertos`}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {(zeroHitsBet || bottomBet)?.bet_numbers.map((num) => (
-                    <span
-                      key={num}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                        (zeroHitsBet || bottomBet)?.matched_numbers.includes(num)
-                          ? "bg-green-500 text-white"
-                          : "bg-blue-200 text-blue-800"
-                      }`}
-                    >
-                      {num.toString().padStart(2, "0")}
-                    </span>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 2ª Colocação */}
+          {topWinners.length > 1 && (
+            <Card className="bg-gradient-to-r from-slate-100 to-gray-100 border-slate-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
+                  <Medal className="h-8 w-8 text-slate-600" />
+                  2ª Colocação - Maior Número de Acertos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topWinners.slice(1).map((winner, idx) => (
+                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-slate-300" : ""}>
+                      <div className="text-3xl font-bold text-slate-900 mb-2">{winner.player_name}</div>
+                      <div className="text-lg text-slate-800 mb-3">{winner.total_matches} números acertados de 10</div>
+                      <div className="flex flex-wrap gap-2">
+                        {winner.bet_numbers.map((num) => (
+                          <span
+                            key={num}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                              winner.matched_numbers.includes(num)
+                                ? "bg-green-500 text-white"
+                                : "bg-slate-200 text-slate-800"
+                            }`}
+                          >
+                            {num.toString().padStart(2, "0")}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </CardContent>
