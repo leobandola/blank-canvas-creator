@@ -28,17 +28,34 @@ export async function isAuthenticated() {
 export async function signIn(email: string, password: string) {
   const supabase = await createServerClient()
 
+  console.log("[v0] Attempting login for:", email)
+
   // Buscar admin pelo email
   const { data: admin, error } = await supabase.from("admins").select("*").eq("email", email).single()
 
-  if (error || !admin) {
-    return { error: "Email ou senha incorretos" }
+  console.log("[v0] Admin query result:", { admin: admin ? "found" : "not found", error: error?.message })
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return { error: "Usuário não encontrado. Verifique o email ou crie uma conta." }
+    }
+    if (error.message?.includes("does not exist")) {
+      return { error: "Tabela de administradores não existe. Execute o script 007_create_admin_with_user.sql" }
+    }
+    return { error: `Erro ao buscar usuário: ${error.message}` }
+  }
+
+  if (!admin) {
+    return { error: "Usuário não encontrado" }
   }
 
   // Verificação de senha - compara com password_hash
   if (admin.password_hash !== password) {
-    return { error: "Email ou senha incorretos" }
+    console.log("[v0] Password mismatch")
+    return { error: "Senha incorreta" }
   }
+
+  console.log("[v0] Login successful for:", email)
 
   // Criar sessão
   const cookieStore = await cookies()
