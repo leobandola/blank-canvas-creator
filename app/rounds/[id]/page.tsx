@@ -1,32 +1,28 @@
-import { createClient } from "@/lib/supabase/server";
-import { BetsList } from "@/components/bets-list";
-import { CreateBetDialog } from "@/components/create-bet-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ArrowLeft, Trophy, FileText } from 'lucide-react';
-import { notFound } from 'next/navigation';
-import { getUser } from '@/lib/auth';
-import { UserNav } from '@/components/user-nav';
+import { createClient } from "@/lib/supabase/server"
+import { BetsList } from "@/components/bets-list"
+import { CreateBetDialog } from "@/components/create-bet-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { ArrowLeft, Trophy, FileText } from "lucide-react"
+import { notFound } from "next/navigation"
+import { getUser } from "@/lib/auth"
+import { UserNav } from "@/components/user-nav"
 
 export default async function RoundDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const user = await getUser();
+  const { id } = await params
+  const supabase = await createClient()
+  const user = await getUser()
 
-  const { data: round, error: roundError } = await supabase
-    .from("rounds")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: round, error: roundError } = await supabase.from("rounds").select("*").eq("id", id).single()
 
   if (roundError || !round) {
-    notFound();
+    notFound()
   }
 
   const { data: bets, error: betsError } = await supabase
@@ -37,15 +33,12 @@ export default async function RoundDetailPage({
       payments(*)
     `)
     .eq("round_id", id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
 
-  const { data: players } = await supabase
-    .from("players")
-    .select("*")
-    .order("name", { ascending: true });
+  const { data: players } = await supabase.from("players").select("*").order("name", { ascending: true })
 
   if (betsError) {
-    console.error("Error fetching bets:", betsError);
+    console.error("Error fetching bets:", betsError)
   }
 
   return (
@@ -112,8 +105,8 @@ export default async function RoundDetailPage({
           </Card>
         </div>
 
-        <BetsList bets={bets || []} roundId={id} isAuthenticated={!!user} />
+        <BetsList bets={bets || []} roundId={id} isAuthenticated={!!user} lotteryType={round.lottery_type} />
       </div>
     </div>
-  );
+  )
 }
