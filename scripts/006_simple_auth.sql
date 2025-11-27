@@ -14,10 +14,14 @@ ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can read their own data" ON admins
   FOR SELECT USING (true);
 
--- Inserir um admin padrão (email: admin@bolao.com, senha: admin123)
--- Hash bcrypt para 'admin123': $2a$10$rN3qN5YqZ5YqZ5YqZ5YqZeN3qN5YqZ5YqZ5YqZ5YqZ5YqZ5YqZ5Yq
+-- Política para permitir inserção (para cadastro)
+CREATE POLICY "Allow insert for signup" ON admins
+  FOR INSERT WITH CHECK (true);
+
+-- Inserir um admin padrão com senha em texto simples para facilitar o primeiro acesso
+-- Email: admin@bolao.com, Senha: admin123
 INSERT INTO admins (email, password_hash, name)
-VALUES ('admin@bolao.com', '$2a$10$rN3qN5YqZ5YqZ5YqZ5YqZeN3qN5YqZ5YqZ5YqZ5YqZ5YqZ5YqZ5Yq', 'Administrador')
+VALUES ('admin@bolao.com', 'admin123', 'Administrador')
 ON CONFLICT (email) DO NOTHING;
 
 -- Atualizar políticas para usar verificação simples de sessão
