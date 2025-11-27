@@ -96,7 +96,7 @@ export default async function DrawDetailPage({
           </Card>
         </div>
 
-        <DrawsDetailList draws={draws || []} roundId={id} />
+        <DrawsDetailList draws={draws || []} roundId={id} lotteryType={round.lottery_type} isAuthenticated={!!user} />
       </div>
     </div>
   )
