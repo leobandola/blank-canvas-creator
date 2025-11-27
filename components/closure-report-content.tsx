@@ -1,34 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, DollarSign } from 'lucide-react';
+"use client"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { CheckCircle2, XCircle, DollarSign } from "lucide-react"
 
 type Round = {
-  id: string;
-  name: string;
-  lottery_type: string;
-  status: string;
-  start_date: string;
-};
+  id: string
+  name: string
+  lottery_type: string
+  status: string
+  start_date: string
+}
 
 type BetWithPayment = {
-  id: string;
-  numbers: number[];
+  id: string
+  numbers: number[]
   payments: Array<{
-    id: string;
-    status: string;
-    amount: number;
-    payment_date: string | null;
-  }>;
-};
+    id: string
+    status: string
+    amount: number
+    payment_date: string | null
+  }>
+}
 
 interface ClosureReportContentProps {
-  round: Round;
-  bets: BetWithPayment[];
-  totalBets: number;
-  paidBets: number;
-  pendingBets: number;
-  totalAmount: number;
-  pendingAmount: number;
+  round: Round
+  bets: BetWithPayment[]
+  totalBets: number
+  paidBets: number
+  pendingBets: number
+  totalAmount: number
+  pendingAmount: number
 }
 
 export function ClosureReportContent({
@@ -40,7 +42,7 @@ export function ClosureReportContent({
   totalAmount,
   pendingAmount,
 }: ClosureReportContentProps) {
-  const sortedBets = [...bets].sort((a, b) => a.id.localeCompare(b.id));
+  const sortedBets = [...bets].sort((a, b) => a.id.localeCompare(b.id))
 
   return (
     <div className="print-content">
@@ -67,12 +69,13 @@ export function ClosureReportContent({
         <CardHeader className="bg-gradient-to-r from-amber-600 to-red-600 text-white">
           <CardTitle className="text-3xl">Relatório de Fechamento</CardTitle>
           <p className="text-amber-50 mt-2">
-            Gerado em {new Date().toLocaleDateString('pt-BR', { 
-              day: '2-digit', 
-              month: 'long', 
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            Gerado em{" "}
+            {new Date().toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
         </CardHeader>
@@ -82,20 +85,20 @@ export function ClosureReportContent({
               <span className="font-semibold">Rodada:</span> {round.name}
             </div>
             <div>
-              <span className="font-semibold">Tipo:</span>{' '}
+              <span className="font-semibold">Tipo:</span>{" "}
               <Badge variant="outline" className="capitalize">
-                {round.lottery_type === 'quina' ? 'Quina (1-80)' : 'Mega Sena (1-60)'}
+                {round.lottery_type === "quina" ? "Quina (1-80)" : "Mega Sena (1-60)"}
               </Badge>
             </div>
             <div>
-              <span className="font-semibold">Status:</span>{' '}
-              <Badge variant={round.status === 'active' ? 'default' : 'secondary'}>
-                {round.status === 'active' ? 'Ativa' : 'Finalizada'}
+              <span className="font-semibold">Status:</span>{" "}
+              <Badge variant={round.status === "active" ? "default" : "secondary"}>
+                {round.status === "active" ? "Ativa" : "Finalizada"}
               </Badge>
             </div>
             <div>
-              <span className="font-semibold">Data de Início:</span>{' '}
-              {new Date(round.start_date).toLocaleDateString('pt-BR')}
+              <span className="font-semibold">Data de Início:</span>{" "}
+              {new Date(round.start_date).toLocaleDateString("pt-BR")}
             </div>
           </div>
         </CardContent>
@@ -104,9 +107,7 @@ export function ClosureReportContent({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de Apostas
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Apostas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{totalBets}</div>
@@ -115,42 +116,30 @@ export function ClosureReportContent({
 
         <Card className="border-emerald-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-emerald-700">
-              Pagamentos Efetuados
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-emerald-700">Pagamentos Efetuados</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-600">{paidBets}</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              R$ {totalAmount.toFixed(2)}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">R$ {totalAmount.toFixed(2)}</p>
           </CardContent>
         </Card>
 
         <Card className="border-red-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-red-700">
-              Pagamentos Pendentes
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-red-700">Pagamentos Pendentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-600">{pendingBets}</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              R$ {pendingAmount.toFixed(2)}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">R$ {pendingAmount.toFixed(2)}</p>
           </CardContent>
         </Card>
 
         <Card className="border-amber-200">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-amber-700">
-              Total Esperado
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-amber-700">Total Esperado</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-amber-600">
-              R$ {(totalAmount + pendingAmount).toFixed(2)}
-            </div>
+            <div className="text-3xl font-bold text-amber-600">R$ {(totalAmount + pendingAmount).toFixed(2)}</div>
           </CardContent>
         </Card>
       </div>
@@ -158,15 +147,13 @@ export function ClosureReportContent({
       <Card>
         <CardHeader>
           <CardTitle>Apostas (Anônimas)</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Apostas identificadas apenas por número de jogo
-          </p>
+          <p className="text-sm text-muted-foreground">Apostas identificadas apenas por número de jogo</p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {sortedBets.map((bet, index) => {
-              const payment = bet.payments?.[0];
-              const isPaid = payment?.status === 'paid';
+              const payment = bet.payments?.[0]
+              const isPaid = payment?.status === "paid"
 
               return (
                 <div key={bet.id} className="border rounded-lg p-4">
@@ -195,7 +182,7 @@ export function ClosureReportContent({
                       )}
                       {isPaid && payment?.payment_date && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Pago em {new Date(payment.payment_date).toLocaleDateString('pt-BR')}
+                          Pago em {new Date(payment.payment_date).toLocaleDateString("pt-BR")}
                         </p>
                       )}
                     </div>
@@ -203,22 +190,22 @@ export function ClosureReportContent({
                   <div>
                     <p className="text-sm font-medium mb-2">Números apostados:</p>
                     <div className="flex flex-wrap gap-1">
-                      {bet.numbers.sort((a, b) => a - b).map((num) => (
-                        <Badge key={num} variant="outline" className="font-mono">
-                          {num.toString().padStart(2, '0')}
-                        </Badge>
-                      ))}
+                      {bet.numbers
+                        .sort((a, b) => a - b)
+                        .map((num) => (
+                          <Badge key={num} variant="outline" className="font-mono">
+                            {num.toString().padStart(2, "0")}
+                          </Badge>
+                        ))}
                     </div>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
 
           {sortedBets.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhuma aposta cadastrada ainda.
-            </p>
+            <p className="text-center text-muted-foreground py-8">Nenhuma aposta cadastrada ainda.</p>
           )}
         </CardContent>
       </Card>
@@ -237,5 +224,5 @@ export function ClosureReportContent({
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
