@@ -1,42 +1,38 @@
-import { createClient } from "@/lib/supabase/server";
-import { DrawsDetailList } from "@/components/draws-detail-list";
-import { AddDrawDialog } from "@/components/add-draw-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ArrowLeft } from 'lucide-react';
-import { notFound } from 'next/navigation';
-import { getUser } from '@/lib/auth';
-import { UserNav } from '@/components/user-nav';
+import { createClient } from "@/lib/supabase/server"
+import { DrawsDetailList } from "@/components/draws-detail-list"
+import { AddDrawDialog } from "@/components/add-draw-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { ArrowLeft, Trophy } from "lucide-react"
+import { notFound } from "next/navigation"
+import { getUser } from "@/lib/auth"
+import { UserNav } from "@/components/user-nav"
 
 export default async function DrawDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const user = await getUser();
+  const { id } = await params
+  const supabase = await createClient()
+  const user = await getUser()
 
-  const { data: round, error: roundError } = await supabase
-    .from("rounds")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: round, error: roundError } = await supabase.from("rounds").select("*").eq("id", id).single()
 
   if (roundError || !round) {
-    notFound();
+    notFound()
   }
 
   const { data: draws, error: drawsError } = await supabase
     .from("draws")
     .select("*")
     .eq("round_id", id)
-    .order("draw_number", { ascending: false });
+    .order("draw_number", { ascending: false })
 
   if (drawsError) {
-    console.error("Error fetching draws:", drawsError);
+    console.error("Error fetching draws:", drawsError)
   }
 
   return (
@@ -73,15 +69,29 @@ export default async function DrawDetailPage({
                     </Badge>
                   </div>
                 </div>
-                {user && round.status === "active" && (
-                  <AddDrawDialog roundId={id} lotteryType={round.lottery_type} nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1} />
-                )}
+                <div className="flex gap-2 flex-wrap">
+                  {user && round.status === "active" && (
+                    <AddDrawDialog
+                      roundId={id}
+                      lotteryType={round.lottery_type}
+                      nextDrawNumber={(draws?.[0]?.draw_number || 0) + 1}
+                    />
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                {draws?.length || 0} {draws?.length === 1 ? "sorteio realizado" : "sorteios realizados"}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground">
+                  {draws?.length || 0} {draws?.length === 1 ? "sorteio realizado" : "sorteios realizados"}
+                </p>
+                <Button asChild variant="outline">
+                  <Link href={`/prizes/${id}`}>
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Ver Premiação
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -89,5 +99,5 @@ export default async function DrawDetailPage({
         <DrawsDetailList draws={draws || []} roundId={id} />
       </div>
     </div>
-  );
+  )
 }

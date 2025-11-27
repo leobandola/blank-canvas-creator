@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, Trophy, Medal, Award, TrendingDown } from "lucide-react"
+import { ArrowLeft, Trophy, Medal, Award, TrendingDown, FileText, Download } from "lucide-react"
 import { notFound } from "next/navigation"
 import { getUser } from "@/lib/auth"
 import { UserNav } from "@/components/user-nav"
@@ -13,8 +13,8 @@ type BetWithDetails = {
   player_id: string
   player_name: string
   numbers: number[]
-  matched_numbers: number[] // Números que acertou (união de todos os sorteios)
-  total_matches: number // Total de números únicos acertados
+  matched_numbers: number[]
+  total_matches: number
   draws_participated: number
 }
 
@@ -33,7 +33,6 @@ export default async function PrizesDetailPage({
     notFound()
   }
 
-  // Buscar todas as apostas da rodada com os números
   const { data: bets } = await supabase
     .from("bets")
     .select(`
@@ -44,14 +43,12 @@ export default async function PrizesDetailPage({
     `)
     .eq("round_id", id)
 
-  // Buscar todos os sorteios da rodada
   const { data: draws } = await supabase
     .from("draws")
     .select("id, draw_number, numbers")
     .eq("round_id", id)
     .order("draw_number", { ascending: true })
 
-  // Calcular acertos por aposta - contando números únicos acertados
   const betsWithDetails: BetWithDetails[] = []
 
   bets?.forEach((bet) => {
@@ -59,7 +56,6 @@ export default async function PrizesDetailPage({
     const allMatchedNumbers = new Set<number>()
     let drawsParticipated = 0
 
-    // Para cada sorteio, verificar quais números da aposta foram sorteados
     draws?.forEach((draw) => {
       const drawNumbers = draw.numbers as number[]
       const matchesInDraw = betNumbers.filter((n) => drawNumbers.includes(n))
@@ -68,7 +64,6 @@ export default async function PrizesDetailPage({
         drawsParticipated++
       }
 
-      // Adicionar números acertados ao set (não duplica)
       matchesInDraw.forEach((n) => allMatchedNumbers.add(n))
     })
 
@@ -83,22 +78,18 @@ export default async function PrizesDetailPage({
     })
   })
 
-  // Ordenar por total de acertos (números únicos acertados)
   betsWithDetails.sort((a, b) => b.total_matches - a.total_matches)
 
-  // Determinar vencedores
   const mainWinner = betsWithDetails.find((b) => b.total_matches >= 10)
   const secondPlace = !mainWinner && betsWithDetails.length > 0 ? betsWithDetails[0] : null
   const zeroHitsWinner = betsWithDetails.find((b) => b.total_matches === 0)
   const lowestHitsWinner =
     !zeroHitsWinner && betsWithDetails.length > 0 ? betsWithDetails[betsWithDetails.length - 1] : null
 
-  // Calcular vencedores do dia (bonus dos primeiros 7 sorteios)
   const dailyWinners = []
   for (const draw of (draws || []).slice(0, 7)) {
     const drawNumbers = draw.numbers as number[]
 
-    // Calcular acertos de cada aposta neste sorteio específico
     const drawResults =
       bets?.map((bet) => {
         const betNumbers = bet.numbers as number[]
@@ -111,7 +102,6 @@ export default async function PrizesDetailPage({
         }
       }) || []
 
-    // Ordenar por acertos e pegar o maior
     drawResults.sort((a, b) => b.matches - a.matches)
 
     if (drawResults.length > 0 && drawResults[0].matches > 0) {
@@ -126,14 +116,12 @@ export default async function PrizesDetailPage({
     }
   }
 
-  // Contar quantos jogos cada jogador tem
   const playerBetCount = new Map<string, number>()
   betsWithDetails.forEach((bet) => {
     const count = playerBetCount.get(bet.player_id) || 0
     playerBetCount.set(bet.player_id, count + 1)
   })
 
-  // Atribuir número do jogo para cada aposta do jogador
   const playerBetIndex = new Map<string, number>()
   const getBetNumber = (playerId: string) => {
     const current = (playerBetIndex.get(playerId) || 0) + 1
@@ -151,12 +139,34 @@ export default async function PrizesDetailPage({
         )}
 
         <div className="mb-8">
-          <Button asChild variant="ghost" className="mb-4">
-            <Link href="/prizes">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para Premiações
-            </Link>
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button asChild variant="ghost">
+              <Link href="/prizes">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar para Premiações
+              </Link>
+            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <Button asChild variant="outline">
+                <Link href={`/rounds/${id}/report`}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Relatório de Pagamentos
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href={`/rounds/${id}/closure`}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Relatório de Fechamento
+                </Link>
+              </Button>
+              <Button asChild variant="default" className="bg-purple-600 hover:bg-purple-700">
+                <Link href={`/prizes/${id}/report`}>
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Relatório de Premiação
+                </Link>
+              </Button>
+            </div>
+          </div>
 
           <Card className="border-purple-200">
             <CardHeader>
