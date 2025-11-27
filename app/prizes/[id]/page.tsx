@@ -1,423 +1,356 @@
 import { createClient } from "@/lib/supabase/server"
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Trophy, Medal, Award, TrendingDown, FileText, Download } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Trophy, Award, TrendingDown, Gift, FileText, Download } from "lucide-react"
+import Link from "next/link"
 
-type BetResult = {
-  bet_id: string
-  player_id: string
-  player_name: string
-  bet_numbers: number[]
-  matched_numbers: number[]
-  total_matches: number
-}
-
-export default async function PrizesPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function PrizesPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
 
-  const { data: round } = await supabase.from("rounds").select("*").eq("id", id).single()
+  console.log("[v0] Loading prizes page for round:", params.id)
+
+  // Buscar rodada
+  const { data: round } = await supabase.from("rounds").select("*").eq("id", params.id).single()
 
   if (!round) {
-    notFound()
+    return <div>Rodada não encontrada</div>
   }
 
+  // Buscar todas as apostas da rodada
   const { data: bets } = await supabase
     .from("bets")
-    .select(`
-      id,
-      player_id,
-      numbers,
-      player:players(id, name)
-    `)
-    .eq("round_id", id)
+    .select("*, players(name)")
+    .eq("round_id", params.id)
+    .order("created_at")
 
-  const { data: draws } = await supabase
-    .from("draws")
-    .select("id, draw_number, numbers, draw_date")
-    .eq("round_id", id)
-    .order("draw_number", { ascending: true })
+  // Buscar todos os sorteios da rodada
+  const { data: draws } = await supabase.from("draws").select("*").eq("round_id", params.id).order("draw_date")
 
-  const allDrawnNumbers = new Set<number>()
-  draws?.forEach((draw) => {
-    const drawNumbers = draw.numbers as number[]
-    drawNumbers.forEach((n) => allDrawnNumbers.add(n))
-  })
+  if (!bets || !draws) {
+    return <div>Erro ao carregar dados</div>
+  }
 
-  const betResults: BetResult[] = []
+  console.log("[v0] Total bets:", bets.length)
+  console.log("[v0] Total draws:", draws.length)
 
-  bets?.forEach((bet) => {
+  // Todos os números sorteados até agora (únicos)
+  const allDrawnNumbers = Array.from(new Set(draws.flatMap((d) => d.numbers))).sort((a, b) => a - b)
+
+  console.log("[v0] All drawn numbers:", allDrawnNumbers)
+
+  // Calcular acertos para cada aposta individualmente
+  const betResults = bets.map((bet) => {
     const betNumbers = bet.numbers as number[]
-    const matchedNumbers = betNumbers.filter((n) => allDrawnNumbers.has(n))
+    const matchedNumbers = betNumbers.filter((num) => allDrawnNumbers.includes(num))
+    const matchCount = matchedNumbers.length
 
-    betResults.push({
-      bet_id: bet.id,
-      player_id: bet.player_id,
-      player_name: (bet.player as any).name,
-      bet_numbers: betNumbers.sort((a, b) => a - b),
-      matched_numbers: matchedNumbers.sort((a, b) => a - b),
-      total_matches: matchedNumbers.length,
-    })
-  })
+    console.log("[v0] Bet:", bet.players.name, "Numbers:", betNumbers, "Matches:", matchCount)
 
-  betResults.sort((a, b) => {
-    if (b.total_matches !== a.total_matches) {
-      return b.total_matches - a.total_matches
+    return {
+      betId: bet.id,
+      playerName: bet.players.name,
+      betNumbers,
+      matchedNumbers,
+      matchCount,
     }
-    return a.player_name.localeCompare(b.player_name)
   })
 
-  const playerBetCount = new Map<string, number>()
-  betResults.forEach((bet) => {
-    playerBetCount.set(bet.player_id, (playerBetCount.get(bet.player_id) || 0) + 1)
-  })
+  // Ordenar por número de acertos (maior para menor)
+  const sortedResults = [...betResults].sort((a, b) => b.matchCount - a.matchCount)
 
-  const playerBetIndex = new Map<string, number>()
-  const getBetNumber = (playerId: string) => {
-    const current = (playerBetIndex.get(playerId) || 0) + 1
-    playerBetIndex.set(playerId, current)
-    return current
-  }
+  console.log(
+    "[v0] Sorted results:",
+    sortedResults.map((r) => ({ name: r.playerName, matches: r.matchCount })),
+  )
 
-  // Prêmio Principal: quem tem 10 acertos
-  const winnersWithTen = betResults.filter((b) => b.total_matches === 10)
+  // 🏆 PRÊMIO PRINCIPAL (10 acertos)
+  const mainWinners = betResults.filter((bet) => bet.matchCount === 10)
 
-  // Se não há ninguém com 10, o prêmio principal vai para quem tem mais acertos
-  const topScore = betResults.length > 0 ? betResults[0].total_matches : 0
-  const topWinners = winnersWithTen.length > 0 ? winnersWithTen : betResults.filter((b) => b.total_matches === topScore)
+  console.log("[v0] Main winners (10 matches):", mainWinners.length)
 
-  // Nesse caso, pega o segundo melhor score
-  let secondPlaceWinners: BetResult[] = []
-  if (winnersWithTen.length > 0) {
-    const remainingBets = betResults.filter((b) => b.total_matches < 10)
-    if (remainingBets.length > 0) {
-      const secondScore = remainingBets[0].total_matches
-      secondPlaceWinners = remainingBets.filter((b) => b.total_matches === secondScore)
+  // 🥈 2ª COLOCAÇÃO
+  // Se há vencedor com 10 acertos, a 2ª colocação é quem tem o maior número de acertos abaixo de 10
+  // Se NÃO há vencedor com 10 acertos, NÃO há 2ª colocação (o melhor vai para Prêmio Principal)
+  let secondPlaceWinners: typeof betResults = []
+
+  if (mainWinners.length > 0) {
+    // Há vencedor com 10 acertos
+    const belowTenResults = betResults.filter((bet) => bet.matchCount < 10)
+    if (belowTenResults.length > 0) {
+      const maxBelow10 = Math.max(...belowTenResults.map((b) => b.matchCount))
+      secondPlaceWinners = belowTenResults.filter((bet) => bet.matchCount === maxBelow10)
     }
   }
 
-  const bottomScore = betResults.length > 0 ? betResults[betResults.length - 1].total_matches : 0
-  const bottomWinners = betResults.filter((b) => b.total_matches === bottomScore)
+  console.log("[v0] Second place winners:", secondPlaceWinners.length)
 
-  const dailyWinners: { drawNumber: number; winners: { name: string; matches: number }[] }[] = []
+  // 🥉 PRÊMIO ZERO/MENOR PONTUAÇÃO
+  const minMatches = Math.min(...betResults.map((b) => b.matchCount))
+  const lowestScorers = betResults.filter((bet) => bet.matchCount === minMatches)
 
-  for (const draw of (draws || []).slice(0, 7)) {
+  console.log("[v0] Lowest scorers (", minMatches, "matches):", lowestScorers.length)
+
+  // 🎁 BÔNUS DIÁRIO (primeiros 7 sorteios)
+  const dailyWinners: { draw: any; winners: typeof betResults }[] = []
+
+  for (let i = 0; i < Math.min(7, draws.length); i++) {
+    const draw = draws[i]
     const drawNumbers = draw.numbers as number[]
 
-    const drawResults =
-      bets?.map((bet) => {
-        const betNumbers = bet.numbers as number[]
-        const matchesInDraw = betNumbers.filter((n) => drawNumbers.includes(n))
-        return {
-          playerName: (bet.player as any).name,
-          matches: matchesInDraw.length,
-        }
-      }) || []
+    // Para cada aposta, calcular acertos APENAS neste sorteio
+    const drawResults = bets.map((bet) => {
+      const betNumbers = bet.numbers as number[]
+      const matchedInDraw = betNumbers.filter((num) => drawNumbers.includes(num))
+      return {
+        betId: bet.id,
+        playerName: bet.players.name,
+        betNumbers,
+        matchedNumbers: matchedInDraw,
+        matchCount: matchedInDraw.length,
+      }
+    })
 
-    drawResults.sort((a, b) => b.matches - a.matches)
+    // Encontrar o maior número de acertos neste sorteio
+    const maxMatches = Math.max(...drawResults.map((r) => r.matchCount))
+    const winners = drawResults.filter((r) => r.matchCount === maxMatches)
 
-    if (drawResults.length > 0 && drawResults[0].matches > 0) {
-      const maxMatches = drawResults[0].matches
-      const winners = drawResults.filter((r) => r.matches === maxMatches)
+    dailyWinners.push({ draw, winners })
+  }
 
-      dailyWinners.push({
-        drawNumber: draw.draw_number,
-        winners: winners.map((w) => ({ name: w.playerName, matches: w.matches })),
-      })
-    }
+  console.log("[v0] Daily winners:", dailyWinners.length)
+
+  // Função para renderizar números com destaque
+  const renderNumbers = (betNumbers: number[], matchedNumbers: number[]) => {
+    return betNumbers.map((num) => {
+      const isMatched = matchedNumbers.includes(num)
+      return (
+        <Badge
+          key={num}
+          variant={isMatched ? "default" : "outline"}
+          className={isMatched ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-200 text-gray-600"}
+        >
+          {num.toString().padStart(2, "0")}
+        </Badge>
+      )
+    })
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="ghost">
-            <Link href="/prizes">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{round.name}</h1>
-            <p className="text-gray-600">
-              {round.lottery_type === "quina" ? "Quina (1-80)" : "Mega Sena (1-60)"} • {draws?.length || 0} sorteios
-              realizados
-            </p>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Premiação - {round.name}</h1>
+          <p className="text-muted-foreground mt-1">
+            {round.lottery_type === "quina" ? "Quina (1-80)" : "Mega Sena (1-60)"} • {draws.length} sorteio(s)
+            realizado(s)
+          </p>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/rounds/${id}/report`}>
-              <FileText className="h-4 w-4 mr-2" />
-              Pagamentos
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/rounds/${params.id}/report`}>
+              <FileText className="mr-2 h-4 w-4" />
+              Relatório Pagamentos
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/rounds/${id}/closure`}>
-              <Download className="h-4 w-4 mr-2" />
-              Fechamento
+          <Button asChild variant="outline">
+            <Link href={`/rounds/${params.id}/closure`}>
+              <FileText className="mr-2 h-4 w-4" />
+              Relatório Fechamento
             </Link>
           </Button>
-          <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700">
-            <Link href={`/prizes/${id}/report`}>
-              <Trophy className="h-4 w-4 mr-2" />
-              Premiação PDF
+          <Button asChild>
+            <Link href={`/prizes/${params.id}/report`}>
+              <Download className="mr-2 h-4 w-4" />
+              Relatório PDF Premiação
             </Link>
           </Button>
         </div>
       </div>
 
-      {allDrawnNumbers.size > 0 && (
-        <Card className="mb-6">
+      {/* Números Sorteados */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Números Sorteados até Agora</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {allDrawnNumbers.map((num) => (
+              <Badge key={num} className="bg-blue-600 text-white">
+                {num.toString().padStart(2, "0")}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* PRÊMIO PRINCIPAL */}
+      <Card className="border-yellow-400 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-yellow-600" />
+            Prêmio Principal
+          </CardTitle>
+          <CardDescription>
+            {mainWinners.length > 0
+              ? "Completou os 10 acertos!"
+              : `Maior número de acertos: ${sortedResults[0]?.matchCount || 0} números`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {mainWinners.length > 0 ? (
+            mainWinners.map((winner) => (
+              <div key={winner.betId} className="space-y-2">
+                <h3 className="text-lg font-semibold">{winner.playerName}</h3>
+                <p className="text-sm text-muted-foreground">10 números acertados de 10</p>
+                <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
+              </div>
+            ))
+          ) : sortedResults.length > 0 ? (
+            sortedResults
+              .filter((r) => r.matchCount === sortedResults[0].matchCount)
+              .map((winner) => (
+                <div key={winner.betId} className="space-y-2">
+                  <h3 className="text-lg font-semibold">{winner.playerName}</h3>
+                  <p className="text-sm text-muted-foreground">{winner.matchCount} números acertados de 10</p>
+                  <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
+                </div>
+              ))
+          ) : (
+            <p className="text-muted-foreground">Nenhum vencedor ainda</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 2ª COLOCAÇÃO - Só aparece se há vencedor com 10 acertos */}
+      {secondPlaceWinners.length > 0 && (
+        <Card className="border-gray-400 bg-gray-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Números Já Sorteados ({allDrawnNumbers.size})
+              <Award className="h-6 w-6 text-gray-600" />
+              2ª Colocação - Maior Número de Acertos
             </CardTitle>
+            <CardDescription>{secondPlaceWinners[0].matchCount} números acertados</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {Array.from(allDrawnNumbers)
-                .sort((a, b) => a - b)
-                .map((num) => (
-                  <span
-                    key={num}
-                    className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm"
-                  >
-                    {num.toString().padStart(2, "0")}
-                  </span>
-                ))}
-            </div>
+          <CardContent className="space-y-4">
+            {secondPlaceWinners.map((winner) => (
+              <div key={winner.betId} className="space-y-2">
+                <h3 className="text-lg font-semibold">{winner.playerName}</h3>
+                <p className="text-sm text-muted-foreground">{winner.matchCount} números acertados de 10</p>
+                <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
 
-      <div className="grid gap-6 mb-8">
-        {/* Prêmio Principal */}
-        {topWinners.length > 0 && (
-          <Card className="bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl text-amber-900">
-                <Trophy className="h-8 w-8 text-amber-600" />
-                {winnersWithTen.length > 0
-                  ? "Prêmio Principal - 10 Acertos"
-                  : "Prêmio Principal - Maior Número de Acertos"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topWinners.map((winner, idx) => {
-                  const betNumber = getBetNumber(winner.player_id)
-                  const hasMultipleBets = (playerBetCount.get(winner.player_id) || 0) > 1
-
-                  return (
-                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-amber-300" : ""}>
-                      <div className="text-3xl font-bold text-amber-900 mb-2">
-                        {winner.player_name}
-                        {hasMultipleBets && <span className="text-xl text-amber-700 ml-2">(Jogo {betNumber})</span>}
-                      </div>
-                      <div className="text-lg text-amber-800 mb-3">
-                        {winner.total_matches === 10
-                          ? "Completou os 10 números!"
-                          : `${winner.total_matches} números acertados de 10`}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {winner.bet_numbers.map((num) => (
-                          <span
-                            key={num}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                              winner.matched_numbers.includes(num)
-                                ? "bg-green-500 text-white"
-                                : "bg-amber-200 text-amber-800"
-                            }`}
-                          >
-                            {num.toString().padStart(2, "0")}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {secondPlaceWinners.length > 0 && (
-          <Card className="bg-gradient-to-r from-slate-100 to-gray-100 border-slate-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
-                <Medal className="h-8 w-8 text-slate-600" />
-                2ª Colocação - {secondPlaceWinners[0].total_matches} Acertos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {secondPlaceWinners.map((winner, idx) => {
-                  const betNumber = getBetNumber(winner.player_id)
-                  const hasMultipleBets = (playerBetCount.get(winner.player_id) || 0) > 1
-
-                  return (
-                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-slate-300" : ""}>
-                      <div className="text-3xl font-bold text-slate-900 mb-2">
-                        {winner.player_name}
-                        {hasMultipleBets && <span className="text-xl text-slate-700 ml-2">(Jogo {betNumber})</span>}
-                      </div>
-                      <div className="text-lg text-slate-800 mb-3">{winner.total_matches} números acertados de 10</div>
-                      <div className="flex flex-wrap gap-2">
-                        {winner.bet_numbers.map((num) => (
-                          <span
-                            key={num}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                              winner.matched_numbers.includes(num)
-                                ? "bg-green-500 text-white"
-                                : "bg-slate-200 text-slate-800"
-                            }`}
-                          >
-                            {num.toString().padStart(2, "0")}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {bottomWinners.length > 0 && (
-          <Card className="bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl text-blue-900">
-                <TrendingDown className="h-8 w-8 text-blue-600" />
-                Prêmio Zero Acerto / Menor Pontuação
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {bottomWinners.map((winner, idx) => {
-                  const betNumber = getBetNumber(winner.player_id)
-                  const hasMultipleBets = (playerBetCount.get(winner.player_id) || 0) > 1
-
-                  return (
-                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-blue-300" : ""}>
-                      <div className="text-3xl font-bold text-blue-900 mb-2">
-                        {winner.player_name}
-                        {hasMultipleBets && <span className="text-xl text-blue-700 ml-2">(Jogo {betNumber})</span>}
-                      </div>
-                      <div className="text-lg text-blue-800 mb-3">
-                        {winner.total_matches === 0
-                          ? "0 acertos - Não acertou nenhum número!"
-                          : `${winner.total_matches} acertos - Menor número de acertos`}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {winner.bet_numbers.map((num) => (
-                          <span
-                            key={num}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                              winner.matched_numbers.includes(num)
-                                ? "bg-green-500 text-white"
-                                : "bg-blue-200 text-blue-800"
-                            }`}
-                          >
-                            {num.toString().padStart(2, "0")}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Bônus Diários */}
-        {dailyWinners.length > 0 && (
-          <Card className="bg-gradient-to-r from-emerald-100 to-green-100 border-emerald-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl text-emerald-900">
-                <Award className="h-8 w-8 text-emerald-600" />
-                Resultado do Dia (Bônus) - Primeiros 7 Sorteios
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {dailyWinners.map((winner) => (
-                  <div
-                    key={winner.drawNumber}
-                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-emerald-200"
-                  >
-                    <div>
-                      <span className="font-semibold text-emerald-900">Sorteio #{winner.drawNumber}</span>
-                      <span className="text-emerald-800 ml-2">- {winner.winners.map((w) => w.name).join(", ")}</span>
-                    </div>
-                    <Badge className="bg-emerald-600 text-lg px-3 py-1">
-                      {winner.winners[0].matches} {winner.winners[0].matches === 1 ? "acerto" : "acertos"}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <Card>
+      {/* PRÊMIO ZERO/MENOR PONTUAÇÃO */}
+      <Card className="border-blue-400 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-2xl">Classificação Geral por Aposta</CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Cada aposta de 10 números é avaliada individualmente. Verde = número acertado.
-          </p>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingDown className="h-6 w-6 text-blue-600" />
+            Prêmio Zero Acerto / Menor Pontuação
+          </CardTitle>
+          <CardDescription>
+            {lowestScorers[0].matchCount === 0
+              ? "Não acertou nenhum número!"
+              : `Menor número de acertos: ${lowestScorers[0].matchCount} números`}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {betResults.map((result, index) => {
-              playerBetIndex.set(result.player_id, 0) // Reset
-            })}
-            {betResults.map((result, index) => {
-              const betNumber = getBetNumber(result.player_id)
-              const hasMultipleBets = (playerBetCount.get(result.player_id) || 0) > 1
+        <CardContent className="space-y-4">
+          {lowestScorers.map((winner) => (
+            <div key={winner.betId} className="space-y-2">
+              <h3 className="text-lg font-semibold">{winner.playerName}</h3>
+              <p className="text-sm text-muted-foreground">
+                {winner.matchCount} acerto{winner.matchCount !== 1 ? "s" : ""}
+              </p>
+              <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-              return (
-                <div
-                  key={result.bet_id}
-                  className={`p-4 rounded-lg border ${
-                    index === 0 ? "bg-amber-50 border-amber-200" : "bg-white border-gray-200"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl font-bold text-gray-400 w-8">{index + 1}º</span>
-                      <div>
-                        <span className="text-lg font-semibold">{result.player_name}</span>
-                        {hasMultipleBets && <span className="text-sm text-gray-500 ml-2">(Jogo {betNumber})</span>}
-                      </div>
-                    </div>
-                    <Badge variant={result.total_matches >= 10 ? "default" : "secondary"} className="text-lg px-4 py-1">
-                      {result.total_matches}/10 acertos
-                    </Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-2 ml-11">
-                    {result.bet_numbers.map((num) => (
-                      <span
-                        key={num}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                          result.matched_numbers.includes(num) ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
+      {/* BÔNUS DIÁRIOS */}
+      {dailyWinners.length > 0 && (
+        <Card className="border-purple-400 bg-purple-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="h-6 w-6 text-purple-600" />
+              Bônus - Resultado do Dia (7 primeiros sorteios)
+            </CardTitle>
+            <CardDescription>Quem fez mais acertos em cada sorteio individual</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {dailyWinners.map(({ draw, winners }, index) => (
+              <div key={draw.id} className="space-y-3 border-b pb-4 last:border-b-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">
+                    Sorteio {index + 1} - {new Date(draw.draw_date).toLocaleDateString("pt-BR")}
+                  </h4>
+                  <div className="flex gap-1">
+                    {(draw.numbers as number[]).map((num) => (
+                      <Badge key={num} variant="secondary" className="text-xs">
                         {num.toString().padStart(2, "0")}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
-              )
-            })}
+                <div className="space-y-2">
+                  {winners.map((winner) => (
+                    <div key={winner.betId} className="text-sm">
+                      <span className="font-medium">{winner.playerName}</span>
+                      <span className="text-muted-foreground ml-2">
+                        - {winner.matchCount} acerto{winner.matchCount !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* CLASSIFICAÇÃO GERAL */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Classificação Geral</CardTitle>
+          <CardDescription>Todas as apostas ordenadas por número de acertos</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {sortedResults.map((result, index) => (
+              <div
+                key={result.betId}
+                className={`p-4 rounded-lg border ${
+                  index === 0
+                    ? "bg-yellow-50 border-yellow-400"
+                    : index === 1
+                      ? "bg-gray-50 border-gray-300"
+                      : index === 2
+                        ? "bg-orange-50 border-orange-300"
+                        : "bg-white"
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-muted-foreground">{index + 1}</span>
+                      <h3 className="text-lg font-semibold">{result.playerName}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {result.matchCount} número{result.matchCount !== 1 ? "s" : ""} acertado
+                      {result.matchCount !== 1 ? "s" : ""} de 10
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-lg font-bold">
+                    {result.matchCount} acertos
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-2">{renderNumbers(result.betNumbers, result.matchedNumbers)}</div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
