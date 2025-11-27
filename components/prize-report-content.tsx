@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft, Download, Trophy, Medal, Award, TrendingDown } from "lucide-react"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 
 type BetWithDetails = {
   bet_id: string
@@ -49,47 +49,55 @@ export function PrizeReportContent({
   dailyWinners,
 }: PrizeReportContentProps) {
   const reportRef = useRef<HTMLDivElement>(null)
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return
 
-    const html2canvas = (await import("html2canvas")).default
-    const jsPDF = (await import("jspdf")).default
+    try {
+      setIsGeneratingPDF(true)
 
-    const canvas = await html2canvas(reportRef.current, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    })
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")])
 
-    const imgData = canvas.toDataURL("image/png")
-    const pdf = new jsPDF("p", "mm", "a4")
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      })
 
-    const pdfWidth = pdf.internal.pageSize.getWidth()
-    const pdfHeight = pdf.internal.pageSize.getHeight()
-    const imgWidth = canvas.width
-    const imgHeight = canvas.height
-    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
-    const imgX = (pdfWidth - imgWidth * ratio) / 2
-    const imgY = 10
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF("p", "mm", "a4")
 
-    let heightLeft = imgHeight * ratio
-    let position = imgY
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = canvas.width
+      const imgHeight = canvas.height
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+      const imgX = (pdfWidth - imgWidth * ratio) / 2
+      const imgY = 10
 
-    pdf.addImage(imgData, "PNG", imgX, position, imgWidth * ratio, imgHeight * ratio)
-    heightLeft -= pdfHeight
+      let heightLeft = imgHeight * ratio
+      let position = imgY
 
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight * ratio
-      pdf.addPage()
       pdf.addImage(imgData, "PNG", imgX, position, imgWidth * ratio, imgHeight * ratio)
       heightLeft -= pdfHeight
-    }
 
-    pdf.save(`premiacao-${round.name.replace(/\s+/g, "-").toLowerCase()}.pdf`)
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight * ratio
+        pdf.addPage()
+        pdf.addImage(imgData, "PNG", imgX, position, imgWidth * ratio, imgHeight * ratio)
+        heightLeft -= pdfHeight
+      }
+
+      pdf.save(`premiacao-${round.name.replace(/\s+/g, "-").toLowerCase()}.pdf`)
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error)
+      alert("Erro ao gerar PDF. Tente novamente.")
+    } finally {
+      setIsGeneratingPDF(false)
+    }
   }
 
-  // Contar quantos jogos cada jogador tem
   const playerBetCount = new Map<string, number>()
   betsWithDetails.forEach((bet) => {
     const count = playerBetCount.get(bet.player_id) || 0
@@ -113,14 +121,13 @@ export function PrizeReportContent({
               Voltar
             </Link>
           </Button>
-          <Button onClick={handleDownloadPDF} className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={handleDownloadPDF} className="bg-purple-600 hover:bg-purple-700" disabled={isGeneratingPDF}>
             <Download className="h-4 w-4 mr-2" />
-            Baixar PDF
+            {isGeneratingPDF ? "Gerando PDF..." : "Baixar PDF"}
           </Button>
         </div>
 
         <div ref={reportRef} className="bg-white p-6 space-y-6">
-          {/* Cabeçalho */}
           <div className="text-center border-b-2 border-purple-600 pb-4">
             <h1 className="text-3xl font-bold text-purple-900">RELATÓRIO DE PREMIAÇÃO</h1>
             <h2 className="text-xl font-semibold text-gray-700 mt-2">{round.name}</h2>
@@ -136,7 +143,6 @@ export function PrizeReportContent({
             </p>
           </div>
 
-          {/* Números sorteados */}
           <div className="border rounded-lg p-4">
             <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
               <span className="w-6 h-6 bg-blue-600 text-white rounded flex items-center justify-center text-sm">S</span>
@@ -164,7 +170,6 @@ export function PrizeReportContent({
             </div>
           </div>
 
-          {/* Prêmios */}
           <div className="grid gap-4">
             {mainWinner && (
               <div className="border-2 border-amber-400 bg-amber-50 rounded-lg p-4">
@@ -278,7 +283,6 @@ export function PrizeReportContent({
             )}
           </div>
 
-          {/* Classificação Geral */}
           <div className="border rounded-lg p-4">
             <h3 className="font-bold text-lg mb-4">CLASSIFICAÇÃO GERAL POR APOSTA</h3>
             <p className="text-xs text-gray-600 mb-3">
@@ -330,7 +334,6 @@ export function PrizeReportContent({
             </div>
           </div>
 
-          {/* Rodapé */}
           <div className="text-center text-xs text-gray-500 border-t pt-4">
             <p>Sistema de Gerenciamento de Bolões</p>
           </div>
