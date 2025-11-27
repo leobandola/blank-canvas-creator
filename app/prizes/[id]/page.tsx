@@ -330,8 +330,8 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
             </Card>
           )}
 
-          {/* 2ª Colocação */}
-          {topWinners.length > 1 && (
+          {/* 2ª Colocação só aparece quando HÁ vencedor com 10 acertos */}
+          {mainWinner && betResults.length > 1 && (
             <Card className="bg-gradient-to-r from-slate-100 to-gray-100 border-slate-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -341,26 +341,31 @@ export default async function PrizesDetailPage({ params }: { params: Promise<{ i
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {topWinners.slice(1).map((winner, idx) => (
-                    <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-slate-300" : ""}>
-                      <div className="text-3xl font-bold text-slate-900 mb-2">{winner.player_name}</div>
-                      <div className="text-lg text-slate-800 mb-3">{winner.total_matches} números acertados de 10</div>
-                      <div className="flex flex-wrap gap-2">
-                        {winner.bet_numbers.map((num) => (
-                          <span
-                            key={num}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                              winner.matched_numbers.includes(num)
-                                ? "bg-green-500 text-white"
-                                : "bg-slate-200 text-slate-800"
-                            }`}
-                          >
-                            {num.toString().padStart(2, "0")}
-                          </span>
-                        ))}
+                  {betResults
+                    .filter((b) => b.total_matches < 10)
+                    .slice(0, 5)
+                    .map((winner, idx) => (
+                      <div key={winner.bet_id} className={idx > 0 ? "pt-4 border-t border-slate-300" : ""}>
+                        <div className="text-3xl font-bold text-slate-900 mb-2">{winner.player_name}</div>
+                        <div className="text-lg text-slate-800 mb-3">
+                          {winner.total_matches} números acertados de 10
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {winner.bet_numbers.map((num) => (
+                            <span
+                              key={num}
+                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                                winner.matched_numbers.includes(num)
+                                  ? "bg-green-500 text-white"
+                                  : "bg-slate-200 text-slate-800"
+                              }`}
+                            >
+                              {num.toString().padStart(2, "0")}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </CardContent>
             </Card>
