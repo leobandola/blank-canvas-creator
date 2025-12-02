@@ -193,12 +193,12 @@ export default async function PrizesPage({ params }: { params: { id: string } })
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-6 w-6 text-yellow-600" />
-            Prêmio Principal
+            Prêmio Principal - 10 Acertos
           </CardTitle>
           <CardDescription>
             {mainWinners.length > 0
               ? "Completou os 10 acertos!"
-              : `Maior número de acertos: ${sortedResults[0]?.matchCount || 0} números`}
+              : `Melhor resultado: ${sortedResults[0]?.matchCount || 0} números`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -206,7 +206,7 @@ export default async function PrizesPage({ params }: { params: { id: string } })
             mainWinners.map((winner) => (
               <div key={winner.betId} className="space-y-2">
                 <h3 className="text-lg font-semibold">{winner.playerName}</h3>
-                <p className="text-sm text-muted-foreground">10 números acertados de 10</p>
+                <p className="text-sm text-muted-foreground">10 acertos em uma única aposta! Parabéns!</p>
                 <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
               </div>
             ))
@@ -216,7 +216,7 @@ export default async function PrizesPage({ params }: { params: { id: string } })
               .map((winner) => (
                 <div key={winner.betId} className="space-y-2">
                   <h3 className="text-lg font-semibold">{winner.playerName}</h3>
-                  <p className="text-sm text-muted-foreground">{winner.matchCount} números acertados de 10</p>
+                  <p className="text-sm text-muted-foreground">{winner.matchCount} acertos nesta aposta</p>
                   <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
                 </div>
               ))
@@ -232,15 +232,15 @@ export default async function PrizesPage({ params }: { params: { id: string } })
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Award className="h-6 w-6 text-gray-600" />
-              2ª Colocação - Maior Número de Acertos
+              2ª Colocação
             </CardTitle>
-            <CardDescription>{secondPlaceWinners[0].matchCount} números acertados</CardDescription>
+            <CardDescription>{secondPlaceWinners[0].matchCount} acertos nesta aposta</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {secondPlaceWinners.map((winner) => (
               <div key={winner.betId} className="space-y-2">
                 <h3 className="text-lg font-semibold">{winner.playerName}</h3>
-                <p className="text-sm text-muted-foreground">{winner.matchCount} números acertados de 10</p>
+                <p className="text-sm text-muted-foreground">{winner.matchCount} acertos nesta aposta</p>
                 <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
               </div>
             ))}
@@ -253,12 +253,12 @@ export default async function PrizesPage({ params }: { params: { id: string } })
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingDown className="h-6 w-6 text-blue-600" />
-            Prêmio Zero Acerto / Menor Pontuação
+            Prêmio Zero Acerto
           </CardTitle>
           <CardDescription>
             {lowestScorers[0].matchCount === 0
               ? "Não acertou nenhum número!"
-              : `Menor número de acertos: ${lowestScorers[0].matchCount} números`}
+              : `Pior resultado: ${lowestScorers[0].matchCount} acertos`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -266,7 +266,7 @@ export default async function PrizesPage({ params }: { params: { id: string } })
             <div key={winner.betId} className="space-y-2">
               <h3 className="text-lg font-semibold">{winner.playerName}</h3>
               <p className="text-sm text-muted-foreground">
-                {winner.matchCount} acerto{winner.matchCount !== 1 ? "s" : ""}
+                {winner.matchCount} acerto{winner.matchCount !== 1 ? "s" : ""} nesta aposta
               </p>
               <div className="flex flex-wrap gap-2">{renderNumbers(winner.betNumbers, winner.matchedNumbers)}</div>
             </div>
@@ -276,21 +276,19 @@ export default async function PrizesPage({ params }: { params: { id: string } })
 
       {/* BÔNUS DIÁRIOS */}
       {dailyWinners.length > 0 && (
-        <Card className="border-purple-400 bg-purple-50">
+        <Card className="border-green-400 bg-green-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Gift className="h-6 w-6 text-purple-600" />
-              Bônus - Resultado do Dia (7 primeiros sorteios)
+              <Gift className="h-6 w-6 text-green-600" />
+              Resultado do Dia (Bônus) - Primeiros 7 Sorteios
             </CardTitle>
-            <CardDescription>Quem fez mais acertos em cada sorteio individual</CardDescription>
+            <CardDescription>Melhor aposta em cada sorteio individual</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {dailyWinners.map(({ draw, winners }, index) => (
               <div key={draw.id} className="space-y-3 border-b pb-4 last:border-b-0">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">
-                    Sorteio {index + 1} - {new Date(draw.draw_date).toLocaleDateString("pt-BR")}
-                  </h4>
+                  <h4 className="font-semibold">Sorteio #{index + 1}</h4>
                   <div className="flex gap-1">
                     {(draw.numbers as number[]).map((num) => (
                       <Badge key={num} variant="secondary" className="text-xs">
@@ -301,11 +299,11 @@ export default async function PrizesPage({ params }: { params: { id: string } })
                 </div>
                 <div className="space-y-2">
                   {winners.map((winner) => (
-                    <div key={winner.betId} className="text-sm">
+                    <div key={winner.betId} className="flex items-center justify-between">
                       <span className="font-medium">{winner.playerName}</span>
-                      <span className="text-muted-foreground ml-2">
-                        - {winner.matchCount} acerto{winner.matchCount !== 1 ? "s" : ""}
-                      </span>
+                      <Badge variant="default" className="bg-green-600">
+                        {winner.matchCount} acertos
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -319,7 +317,7 @@ export default async function PrizesPage({ params }: { params: { id: string } })
       <Card>
         <CardHeader>
           <CardTitle>Classificação Geral</CardTitle>
-          <CardDescription>Todas as apostas ordenadas por número de acertos</CardDescription>
+          <CardDescription>Todas as apostas individuais ordenadas por acertos</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -342,10 +340,7 @@ export default async function PrizesPage({ params }: { params: { id: string } })
                       <span className="text-2xl font-bold text-muted-foreground">{index + 1}</span>
                       <h3 className="text-lg font-semibold">{result.playerName}</h3>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {result.matchCount} número{result.matchCount !== 1 ? "s" : ""} acertado
-                      {result.matchCount !== 1 ? "s" : ""} de 10
-                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">Aposta individual</p>
                   </div>
                   <Badge variant="outline" className="text-lg font-bold">
                     {result.matchCount} acertos
