@@ -1,6 +1,8 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
+import type React from "react"
+
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -9,114 +11,137 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus, Info } from 'lucide-react';
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from 'next/navigation';
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Plus, Info } from "lucide-react"
+import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function AddDrawDialog({
   roundId,
   lotteryType,
   nextDrawNumber,
 }: {
-  roundId: string;
-  lotteryType: "quina" | "mega_sena";
-  nextDrawNumber: number;
+  roundId: string
+  lotteryType: "quina" | "mega_sena"
+  nextDrawNumber: number
 }) {
-  const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [drawDate, setDrawDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  const router = useRouter();
-  const supabase = createClient();
+  const [open, setOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [drawDate, setDrawDate] = useState(new Date().toISOString().split("T")[0])
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([])
+  const router = useRouter()
+  const supabase = createClient()
 
-  const maxNumber = lotteryType === "quina" ? 80 : 60;
-  const drawSize = 5;
+  const maxNumber = lotteryType === "quina" ? 80 : 60
+  const drawSize = 5
 
   const toggleNumber = (num: number) => {
     if (selectedNumbers.includes(num)) {
-      setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
+      setSelectedNumbers(selectedNumbers.filter((n) => n !== num))
     } else if (selectedNumbers.length < drawSize) {
-      setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b));
+      setSelectedNumbers([...selectedNumbers, num].sort((a, b) => a - b))
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (selectedNumbers.length !== drawSize) {
-      alert(`Você deve selecionar exatamente ${drawSize} números.`);
-      return;
+      alert(`Você deve selecionar exatamente ${drawSize} números.`)
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
-    // Insert the draw
-    const { data: draw, error: drawError } = await supabase
-      .from("draws")
-      .insert([
-        {
-          round_id: roundId,
-          draw_number: nextDrawNumber,
-          draw_date: drawDate,
-          numbers: selectedNumbers,
-        },
-      ])
-      .select()
-      .single();
+    try {
+      console.log("[v0] Starting draw creation with numbers:", selectedNumbers)
 
-    if (drawError) {
-      console.error("Error creating draw:", drawError);
-      alert("Erro ao criar sorteio: " + drawError.message);
-      setIsLoading(false);
-      return;
+      // Insert the draw
+      const { data: draw, error: drawError } = await supabase
+        .from("draws")
+        .insert([
+          {
+            round_id: roundId,
+            draw_number: nextDrawNumber,
+            draw_date: drawDate,
+            numbers: selectedNumbers,
+          },
+        ])
+        .select()
+        .single()
+
+      if (drawError) {
+        console.error("[v0] Error creating draw:", drawError)
+        alert("Erro ao criar sorteio: " + drawError.message)
+        setIsLoading(false)
+        return
+      }
+
+      console.log("[v0] Draw created successfully:", draw)
+
+      // Get all bets for this round
+      const { data: bets, error: betsError } = await supabase.from("bets").select("*").eq("round_id", roundId)
+
+      if (betsError) {
+        console.error("[v0] Error fetching bets:", betsError)
+        alert("Erro ao buscar apostas: " + betsError.message)
+        setIsLoading(false)
+        return
+      }
+
+      console.log("[v0] Found bets:", bets?.length || 0)
+
+      if (!bets || bets.length === 0) {
+        console.log("[v0] No bets found for this round, skipping results creation")
+        setSelectedNumbers([])
+        setDrawDate(new Date().toISOString().split("T")[0])
+        setOpen(false)
+        router.refresh()
+        setIsLoading(false)
+        return
+      }
+
+      // Calculate results for each bet
+      const results = bets.map((bet) => {
+        const matchedNumbers = bet.numbers.filter((num: number) => selectedNumbers.includes(num))
+        return {
+          bet_id: bet.id,
+          draw_id: draw.id,
+          matches_count: matchedNumbers.length,
+          matched_numbers: matchedNumbers,
+        }
+      })
+
+      console.log("[v0] Inserting results:", results.length)
+
+      // Insert all results
+      const { error: resultsError } = await supabase.from("results").insert(results)
+
+      if (resultsError) {
+        console.error("[v0] Error creating results:", resultsError)
+        alert("Erro ao calcular resultados: " + resultsError.message)
+        setIsLoading(false)
+        return
+      }
+
+      console.log("[v0] Results created successfully")
+
+      setSelectedNumbers([])
+      setDrawDate(new Date().toISOString().split("T")[0])
+      setOpen(false)
+      router.refresh()
+      setIsLoading(false)
+    } catch (error) {
+      console.error("[v0] Unexpected error in handleSubmit:", error)
+      alert("Erro inesperado ao criar sorteio. Verifique o console para detalhes.")
+      setIsLoading(false)
     }
-
-    // Get all bets for this round
-    const { data: bets, error: betsError } = await supabase
-      .from("bets")
-      .select("*")
-      .eq("round_id", roundId);
-
-    if (betsError) {
-      console.error("Error fetching bets:", betsError);
-      setIsLoading(false);
-      return;
-    }
-
-    // Calculate results for each bet
-    const results = bets.map((bet) => {
-      const matchedNumbers = bet.numbers.filter((num: number) => selectedNumbers.includes(num));
-      return {
-        bet_id: bet.id,
-        draw_id: draw.id,
-        matches_count: matchedNumbers.length,
-        matched_numbers: matchedNumbers,
-        accumulated_matches: 0, // Will be calculated by trigger
-      };
-    });
-
-    // Insert all results
-    const { error: resultsError } = await supabase
-      .from("results")
-      .insert(results);
-
-    if (resultsError) {
-      console.error("Error creating results:", resultsError);
-      alert("Erro ao calcular resultados: " + resultsError.message);
-    }
-
-    setSelectedNumbers([]);
-    setDrawDate(new Date().toISOString().split('T')[0]);
-    setOpen(false);
-    router.refresh();
-    setIsLoading(false);
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -159,22 +184,15 @@ export function AddDrawDialog({
                   Números Sorteados: {selectedNumbers.length}/{drawSize}
                 </Label>
                 {selectedNumbers.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedNumbers([])}
-                  >
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedNumbers([])}>
                     Limpar
                   </Button>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap gap-1 p-3 border rounded-md min-h-[60px] bg-muted/50">
                 {selectedNumbers.length === 0 ? (
-                  <span className="text-sm text-muted-foreground">
-                    Selecione os números sorteados abaixo
-                  </span>
+                  <span className="text-sm text-muted-foreground">Selecione os números sorteados abaixo</span>
                 ) : (
                   selectedNumbers.map((num) => (
                     <Badge key={num} variant="default" className="bg-blue-600 text-lg px-3 py-1">
@@ -192,9 +210,7 @@ export function AddDrawDialog({
                     variant={selectedNumbers.includes(num) ? "default" : "outline"}
                     size="sm"
                     className={`h-9 w-full text-xs font-mono ${
-                      selectedNumbers.includes(num)
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : ""
+                      selectedNumbers.includes(num) ? "bg-blue-600 hover:bg-blue-700" : ""
                     }`}
                     onClick={() => toggleNumber(num)}
                   >
@@ -205,15 +221,12 @@ export function AddDrawDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="submit"
-              disabled={isLoading || selectedNumbers.length !== drawSize}
-            >
+            <Button type="submit" disabled={isLoading || selectedNumbers.length !== drawSize}>
               {isLoading ? "Adicionando..." : "Adicionar e Calcular Resultados"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
