@@ -10,17 +10,17 @@
 
 ### 1. Fazer o Build da Aplicação
 
-\`\`\`bash
+```bash
 cd /www/wwwroot/myluck.primesollutions.com.br
 npm install --legacy-peer-deps
 npm run build
-\`\`\`
+```
 
 ### 2. Configurar PM2
 
 Crie um arquivo `ecosystem.config.js` na raiz do projeto:
 
-\`\`\`javascript
+```javascript
 module.exports = {
   apps: [{
     name: 'lottery-system',
@@ -37,21 +37,21 @@ module.exports = {
     }
   }]
 }
-\`\`\`
+```
 
 ### 3. Iniciar com PM2
 
-\`\`\`bash
+```bash
 pm2 start ecosystem.config.js
 pm2 save
 pm2 startup
-\`\`\`
+```
 
 ### 4. Configurar Nginx (aaPanel)
 
 No aaPanel, vá em **Website** > **Seu Site** > **Config** e adicione:
 
-\`\`\`nginx
+```nginx
 location / {
     proxy_pass http://localhost:3000;
     proxy_http_version 1.1;
@@ -78,18 +78,18 @@ location /api/ {
     proxy_set_header Host $host;
     proxy_cache_bypass $http_upgrade;
 }
-\`\`\`
+```
 
 ### 5. Verificar se está Rodando
 
-\`\`\`bash
+```bash
 pm2 status
 pm2 logs lottery-system
-\`\`\`
+```
 
 ### 6. Comandos Úteis
 
-\`\`\`bash
+```bash
 # Reiniciar aplicação
 pm2 restart lottery-system
 
@@ -101,7 +101,7 @@ pm2 stop lottery-system
 
 # Remover aplicação
 pm2 delete lottery-system
-\`\`\`
+```
 
 ## Variáveis de Ambiente
 

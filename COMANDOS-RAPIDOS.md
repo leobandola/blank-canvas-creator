@@ -1,14 +1,14 @@
 # Comandos Rápidos para o aaPanel
 
 ## Deploy Completo
-\`\`\`bash
+```bash
 cd /www/wwwroot/myluck.primesollutions.com.br
 chmod +x deploy.sh
 ./deploy.sh
-\`\`\`
+```
 
 ## Verificar Status
-\`\`\`bash
+```bash
 # Ver se a aplicação está rodando
 ps aux | grep "next start"
 
@@ -17,19 +17,19 @@ netstat -tulpn | grep 3004
 
 # Testar localmente
 curl http://localhost:3004
-\`\`\`
+```
 
 ## Logs
-\`\`\`bash
+```bash
 # Ver logs do Supervisor (aaPanel)
 # Acesse: Supervisor > Service > loteria > Log
 
 # Ver logs do Next.js
 tail -f /www/wwwroot/myluck.primesollutions.com.br/.next/standalone/server.log
-\`\`\`
+```
 
 ## Reiniciar Aplicação
-\`\`\`bash
+```bash
 # Pelo Supervisor do aaPanel
 # Supervisor > Service > loteria > Restart
 
@@ -37,35 +37,35 @@ tail -f /www/wwwroot/myluck.primesollutions.com.br/.next/standalone/server.log
 pkill -f "next start"
 cd /www/wwwroot/myluck.primesollutions.com.br
 PORT=3004 npm start
-\`\`\`
+```
 
 ## Resolver Problemas Comuns
 
 ### Erro 503
-\`\`\`bash
+```bash
 # Verificar se a aplicação está rodando
 ps aux | grep node
 
 # Se não estiver, iniciar pelo Supervisor
 # Ou manualmente: PORT=3004 npm start
-\`\`\`
+```
 
 ### Porta em uso
-\`\`\`bash
+```bash
 # Encontrar processo
 lsof -i :3004
 
 # Matar processo
 kill -9 [PID]
-\`\`\`
+```
 
 ### Build com erro
-\`\`\`bash
+```bash
 # Limpar e rebuild
 rm -rf .next node_modules
 npm install --legacy-peer-deps
 npm run build
-\`\`\`
+```
 
 ## Configuração do Daemon no Supervisor
 
@@ -95,4 +95,4 @@ Clique em **Adiciona proxy reverso** e configure:
 - **Recurso avançado:** ✅ Ativado
 
 Clique em **Confirm**
-\`\`\`
+```

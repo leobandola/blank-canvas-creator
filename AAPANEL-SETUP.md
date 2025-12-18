@@ -9,7 +9,7 @@ O Next.js precisa rodar como aplicação Node.js, não como arquivos estáticos 
 
 ## 1. Instalar Node.js no aaPanel
 
-\`\`\`bash
+```bash
 # Conectar via SSH
 ssh root@seu-servidor
 
@@ -20,11 +20,11 @@ apt-get install -y nodejs
 # Verificar instalação
 node --version
 npm --version
-\`\`\`
+```
 
 ## 2. Configurar PM2 (Gerenciador de Processos)
 
-\`\`\`bash
+```bash
 # Instalar PM2 globalmente
 npm install -g pm2
 
@@ -46,7 +46,7 @@ pm2 startup
 
 # Ver logs
 pm2 logs myluck
-\`\`\`
+```
 
 ## 3. Configurar Nginx no aaPanel
 
@@ -56,7 +56,7 @@ No painel aaPanel:
 2. Clique em **Configuração** (arquivo nginx)
 3. Substitua o conteúdo por:
 
-\`\`\`nginx
+```nginx
 server {
     listen 80;
     listen 443 ssl http2;
@@ -112,14 +112,14 @@ server {
     server_name myluck.primesollutions.com.br;
     return 301 https://$server_name$request_uri;
 }
-\`\`\`
+```
 
 4. Clique em **Salvar**
 5. Reinicie o Nginx: `systemctl restart nginx` ou pelo painel aaPanel
 
 ## 4. Verificar se está Funcionando
 
-\`\`\`bash
+```bash
 # Ver processos PM2
 pm2 list
 
@@ -131,11 +131,11 @@ curl http://localhost:3000
 
 # Verificar se o Nginx está rodando
 systemctl status nginx
-\`\`\`
+```
 
 ## 5. Comandos Úteis
 
-\`\`\`bash
+```bash
 # Reiniciar aplicação
 pm2 restart myluck
 
@@ -157,12 +157,12 @@ rm -rf .next node_modules
 npm install --legacy-peer-deps
 npm run build
 pm2 restart myluck
-\`\`\`
+```
 
 ## 6. Troubleshooting
 
 ### Erro: Porta 3000 já em uso
-\`\`\`bash
+```bash
 # Ver o que está usando a porta 3000
 lsof -i :3000
 
@@ -172,16 +172,16 @@ kill -9 <PID>
 # Ou usar outra porta
 PORT=3001 pm2 start npm --name "myluck" -- start
 # E ajustar no nginx: proxy_pass http://127.0.0.1:3001;
-\`\`\`
+```
 
 ### Erro: Permissões
-\`\`\`bash
+```bash
 # Ajustar proprietário dos arquivos
 chown -R www:www /www/wwwroot/myluck.primesollutions.com.br
-\`\`\`
+```
 
 ### Páginas ainda dão 404
-\`\`\`bash
+```bash
 # Limpar cache do navegador (Ctrl+Shift+Delete)
 # Reiniciar tudo
 pm2 restart myluck
@@ -190,52 +190,52 @@ systemctl restart nginx
 # Verificar logs
 pm2 logs myluck
 tail -f /www/wwwlogs/myluck.primesollutions.com.br.error.log
-\`\`\`
+```
 
 ### Build falha
-\`\`\`bash
+```bash
 # Ver erro completo
 npm run build 2>&1 | tee build.log
 
 # Comum: falta de memória
 # Aumentar memória do Node.js
 NODE_OPTIONS="--max-old-space-size=4096" npm run build
-\`\`\`
+```
 
 ## 7. Variáveis de Ambiente
 
 Certifique-se de que as variáveis de ambiente do Supabase estão configuradas:
 
-\`\`\`bash
+```bash
 # Criar arquivo .env.local
 nano /www/wwwroot/myluck.primesollutions.com.br/.env.local
-\`\`\`
+```
 
 Cole suas variáveis:
-\`\`\`env
+```env
 NEXT_PUBLIC_SUPABASE_URL=sua-url-do-supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anonima
 SUPABASE_SERVICE_ROLE_KEY=sua-chave-service-role
 # ... outras variáveis
-\`\`\`
+```
 
 Depois reinicie:
-\`\`\`bash
+```bash
 pm2 restart myluck
-\`\`\`
+```
 
 ## 8. Monitoramento
 
 Configure o PM2 para reiniciar automaticamente em caso de crash ou reboot:
 
-\`\`\`bash
+```bash
 # Iniciar no boot
 pm2 startup
 pm2 save
 
 # Monitorar em tempo real
 pm2 monit
-\`\`\`
+```
 
 ---
 

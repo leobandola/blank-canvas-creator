@@ -24,16 +24,24 @@ export function LoginForm() {
     setError("")
     setLoading(true)
 
+    console.log("[v0] Login form submitted for:", email)
+
     try {
       const result = await signIn(email, password)
+
+      console.log("[v0] Login result:", result)
+
       if (result?.error) {
+        console.error("[v0] Login error:", result.error)
         setError(result.error)
       } else if (result?.success) {
+        console.log("[v0] Login successful, redirecting...")
         router.push("/")
         router.refresh()
       }
     } catch (err) {
-      setError("Erro ao fazer login")
+      console.error("[v0] Login exception:", err)
+      setError(`Erro ao fazer login: ${err instanceof Error ? err.message : "Erro desconhecido"}`)
     } finally {
       setLoading(false)
     }

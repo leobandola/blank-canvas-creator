@@ -4,38 +4,38 @@
 
 Se aparecer erro `EADDRINUSE: address already in use :::3000`:
 
-\`\`\`bash
+```bash
 # Matar processo na porta 3000
 chmod +x kill-port.sh
 ./kill-port.sh 3000
 
 # Ou manualmente
 lsof -ti:3000 | xargs kill -9
-\`\`\`
+```
 
 ## Problema 2: Iniciar na Porta 3004
 
-\`\`\`bash
+```bash
 # Método 1: Variável de ambiente
 PORT=3004 npm start
 
 # Método 2: Script permanente
 npm start -- -p 3004
-\`\`\`
+```
 
 ## Configuração no Supervisor (aaPanel)
 
 **Nome do daemon:** loteria
 
 **Comando de start:**
-\`\`\`
+```
 npm start -- -p 3004
-\`\`\`
+```
 
 **Diretório do processo:**
-\`\`\`
+```
 /www/wwwroot/myluck.primesollutions.com.br
-\`\`\`
+```
 
 **Usuário:** root (ou seu usuário)
 
@@ -45,7 +45,7 @@ npm start -- -p 3004
 
 ## Verificar se está rodando
 
-\`\`\`bash
+```bash
 # Ver logs
 tail -f /root/.pm2/logs/loteria-out.log
 tail -f /root/.pm2/logs/loteria-error.log
@@ -55,7 +55,7 @@ curl http://localhost:3004
 
 # Ver processos
 lsof -i:3004
-\`\`\`
+```
 
 ## Nginx - Configuração do Proxy Reverso
 
@@ -68,7 +68,7 @@ Salve e reinicie o Nginx.
 
 ## Comandos Úteis
 
-\`\`\`bash
+```bash
 # Build
 npm run build
 

@@ -9,7 +9,7 @@
 
 ### 1. Preparar a Aplicação para Produção
 
-\`\`\`bash
+```bash
 cd /www/wwwroot/myluck.primesollutions.com.br
 
 # Parar qualquer processo rodando
@@ -21,7 +21,7 @@ npm install --legacy-peer-deps
 
 # Build para produção
 npm run build
-\`\`\`
+```
 
 ### 2. Configurar o Daemon no Supervisor (aaPanel)
 
@@ -37,25 +37,25 @@ No Supervisor do aaPanel, edite o daemon "loteria":
 - **Remark**: Sistema de Bolão
 
 **Variáveis de ambiente (adicione no arquivo .env):**
-\`\`\`bash
+```bash
 PORT=3004
 NODE_ENV=production
-\`\`\`
+```
 
 ### 3. Criar Script de Inicialização
 
 Crie o arquivo `start.sh` na raiz do projeto:
 
-\`\`\`bash
+```bash
 #!/bin/bash
 cd /www/wwwroot/myluck.primesollutions.com.br
 PORT=3004 NODE_ENV=production npm start
-\`\`\`
+```
 
 Torne-o executável:
-\`\`\`bash
+```bash
 chmod +x start.sh
-\`\`\`
+```
 
 Depois atualize o daemon para usar: `./start.sh`
 
@@ -80,7 +80,7 @@ No Supervisor do aaPanel:
 
 ### 6. Verificar se Está Funcionando
 
-\`\`\`bash
+```bash
 # Verificar se a aplicação está rodando
 curl http://localhost:3004
 
@@ -89,44 +89,44 @@ ps aux | grep node
 
 # Verificar portas
 netstat -tulpn | grep 3004
-\`\`\`
+```
 
 ### 7. Solução de Problemas
 
 **Se o daemon não iniciar:**
 
-\`\`\`bash
+```bash
 # Verificar logs do daemon
 tail -f /www/wwwroot/myluck.primesollutions.com.br/logs/error.log
 
 # Tentar iniciar manualmente para ver erros
 cd /www/wwwroot/myluck.primesollutions.com.br
 PORT=3004 npm start
-\`\`\`
+```
 
 **Se aparecer erro de porta em uso:**
 
-\`\`\`bash
+```bash
 # Encontrar processo usando a porta 3004
 lsof -i :3004
 
 # Matar o processo
 kill -9 [PID]
-\`\`\`
+```
 
 **Se aparecer erro de build:**
 
-\`\`\`bash
+```bash
 # Limpar cache e rebuild
 rm -rf .next
 npm run build
-\`\`\`
+```
 
 ### 8. Configuração de Variáveis de Ambiente
 
 Crie o arquivo `.env` na raiz do projeto:
 
-\`\`\`env
+```env
 # Porta da aplicação
 PORT=3004
 
@@ -139,24 +139,24 @@ SUPABASE_URL=sua_url
 NEXT_PUBLIC_SUPABASE_URL=sua_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_key
 # ... outras variáveis
-\`\`\`
+```
 
 ### 9. Reiniciar Nginx
 
 Após configurar tudo:
 
-\`\`\`bash
+```bash
 # No terminal do servidor
 nginx -t  # Testar configuração
 nginx -s reload  # Recarregar Nginx
-\`\`\`
+```
 
 Ou no aaPanel:
 - Website > myluck.primesollutions.com.br > Service > Restart
 
 ## Comandos Úteis
 
-\`\`\`bash
+```bash
 # Ver logs da aplicação
 tail -f /www/wwwroot/myluck.primesollutions.com.br/.next/standalone/logs/*
 
@@ -165,7 +165,7 @@ tail -f /www/wwwroot/myluck.primesollutions.com.br/.next/standalone/logs/*
 
 # Verificar status
 curl https://myluck.primesollutions.com.br
-\`\`\`
+```
 
 ## Checklist Final
 
@@ -179,7 +179,7 @@ curl https://myluck.primesollutions.com.br
 
 ## Estrutura Correta
 
-\`\`\`
+```
 /www/wwwroot/myluck.primesollutions.com.br/
 ├── .next/                 # Build de produção
 ├── app/                   # Código fonte
