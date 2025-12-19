@@ -23,6 +23,7 @@ type Round = {
   lottery_type: string
   status: string
   start_date: string
+  bet_value: number
 }
 
 type Bet = {
@@ -49,6 +50,7 @@ export function CopyBetsDialog({
   const [isLoading, setIsLoading] = useState(false)
   const [isCopying, setIsCopying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [betValue, setBetValue] = useState<number>(5.0)
   const router = useRouter()
   const supabase = createClient()
 
@@ -56,6 +58,11 @@ export function CopyBetsDialog({
     setOpen(isOpen)
     if (isOpen) {
       await loadRounds()
+      const { data: round } = await supabase.from("rounds").select("bet_value").eq("id", currentRoundId).single()
+
+      if (round?.bet_value) {
+        setBetValue(round.bet_value)
+      }
     } else {
       setSelectedRoundId("")
       setBetsPreview([])
@@ -124,7 +131,6 @@ export function CopyBetsDialog({
     try {
       console.log("[v0] Starting to copy bets from round:", selectedRoundId, "to:", currentRoundId)
 
-      // Verificar se já existem apostas na rodada atual
       const { data: existingBets, error: checkError } = await supabase
         .from("bets")
         .select("id")
@@ -143,7 +149,6 @@ export function CopyBetsDialog({
         }
       }
 
-      // Copiar apostas
       const betsToInsert = betsPreview.map((bet) => ({
         round_id: currentRoundId,
         player_id: bet.player_id,
@@ -156,18 +161,16 @@ export function CopyBetsDialog({
 
       console.log("[v0] Successfully copied", insertedBets.length, "bets")
 
-      // Criar registros de pagamento pendente para cada aposta
       const paymentsToInsert = insertedBets.map((bet) => ({
         bet_id: bet.id,
         status: "pending",
-        amount: 5.0, // Valor padrão
+        amount: betValue,
       }))
 
       const { error: paymentsError } = await supabase.from("payments").insert(paymentsToInsert)
 
       if (paymentsError) {
         console.error("[v0] Error creating payments:", paymentsError)
-        // Não lançar erro aqui, pois as apostas já foram criadas
       }
 
       setOpen(false)

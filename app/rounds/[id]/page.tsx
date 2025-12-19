@@ -11,11 +11,7 @@ import { notFound } from "next/navigation"
 import { getUser } from "@/lib/auth"
 import { UserNav } from "@/components/user-nav"
 
-export default async function RoundDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function RoundDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const user = await getUser()
@@ -74,6 +70,9 @@ export default async function RoundDetailPage({
                     <Badge variant="outline" className="capitalize">
                       {round.lottery_type === "quina" ? "Quina (1-80)" : "Mega Sena (1-60)"}
                     </Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      R$ {(round.bet_value || 5).toFixed(2)} por aposta
+                    </Badge>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -107,8 +106,14 @@ export default async function RoundDetailPage({
                       currentRoundId={id}
                       currentRoundName={round.name}
                       lotteryType={round.lottery_type}
+                      betValue={round.bet_value || 5}
                     />
-                    <CreateBetDialog roundId={id} players={players || []} lotteryType={round.lottery_type} />
+                    <CreateBetDialog
+                      roundId={id}
+                      players={players || []}
+                      lotteryType={round.lottery_type}
+                      betValue={round.bet_value || 5}
+                    />
                   </div>
                 )}
               </div>
