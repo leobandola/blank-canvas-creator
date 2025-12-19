@@ -61,7 +61,7 @@ export default async function RoundDetailPage({
 
           <Card className="border-amber-200">
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                   <CardTitle className="text-3xl mb-3">{round.name}</CardTitle>
                   <div className="flex gap-2 flex-wrap">
@@ -89,25 +89,28 @@ export default async function RoundDetailPage({
                       Relatório Fechamento
                     </Link>
                   </Button>
-                  {user && round.status === "active" && (
-                    <>
-                      <CopyBetsDialog
-                        currentRoundId={id}
-                        currentRoundName={round.name}
-                        lotteryType={round.lottery_type}
-                      />
-                      <CreateBetDialog roundId={id} players={players || []} lotteryType={round.lottery_type} />
-                    </>
-                  )}
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Trophy className="h-4 w-4" />
-                <span>
-                  {bets?.length || 0} {bets?.length === 1 ? "aposta cadastrada" : "apostas cadastradas"}
-                </span>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Trophy className="h-4 w-4" />
+                  <span>
+                    {bets?.length || 0} {bets?.length === 1 ? "aposta cadastrada" : "apostas cadastradas"}
+                  </span>
+                </div>
+
+                {user && round.status === "active" && (
+                  <div className="flex gap-2 flex-wrap">
+                    <CopyBetsDialog
+                      currentRoundId={id}
+                      currentRoundName={round.name}
+                      lotteryType={round.lottery_type}
+                    />
+                    <CreateBetDialog roundId={id} players={players || []} lotteryType={round.lottery_type} />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
