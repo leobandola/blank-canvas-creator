@@ -47,6 +47,8 @@ export function EditRoundDialog({ round }: { round: Round }) {
     e.preventDefault()
     setIsLoading(true)
 
+    console.log("[v0] Updating round with bet_value:", formData.bet_value)
+
     const { error } = await supabase
       .from("rounds")
       .update({
@@ -59,9 +61,10 @@ export function EditRoundDialog({ round }: { round: Round }) {
       .eq("id", round.id)
 
     if (error) {
-      console.error("Error updating round:", error)
+      console.error("[v0] Error updating round:", error)
       alert("Erro ao atualizar rodada: " + error.message)
     } else {
+      console.log("[v0] Round updated successfully with bet_value:", formData.bet_value)
       setOpen(false)
       router.refresh()
     }

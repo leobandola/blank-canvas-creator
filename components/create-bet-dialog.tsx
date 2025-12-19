@@ -52,10 +52,17 @@ export function CreateBetDialog({
   const handleOpenChange = async (isOpen: boolean) => {
     setOpen(isOpen)
     if (isOpen) {
-      const { data: round } = await supabase.from("rounds").select("bet_value").eq("id", roundId).single()
+      console.log("[v0] CreateBetDialog opened, fetching bet_value for round:", roundId)
+      const { data: round, error } = await supabase.from("rounds").select("bet_value").eq("id", roundId).single()
+
+      console.log("[v0] Round data fetched:", round)
+      console.log("[v0] Fetch error:", error)
 
       if (round?.bet_value) {
+        console.log("[v0] Setting betValue to:", round.bet_value)
         setBetValue(round.bet_value)
+      } else {
+        console.log("[v0] No bet_value found, using default 5.0")
       }
     }
   }
@@ -70,6 +77,8 @@ export function CreateBetDialog({
 
     setIsLoading(true)
 
+    console.log("[v0] Creating bet with payment amount:", betValue)
+
     const { data: bet, error: betError } = await supabase
       .from("bets")
       .insert([
@@ -83,11 +92,13 @@ export function CreateBetDialog({
       .single()
 
     if (betError) {
-      console.error("Error creating bet:", betError)
+      console.error("[v0] Error creating bet:", betError)
       alert("Erro ao criar aposta: " + betError.message)
       setIsLoading(false)
       return
     }
+
+    console.log("[v0] Bet created successfully, creating payment with amount:", betValue)
 
     const { error: paymentError } = await supabase.from("payments").insert([
       {
@@ -98,7 +109,9 @@ export function CreateBetDialog({
     ])
 
     if (paymentError) {
-      console.error("Error creating payment:", paymentError)
+      console.error("[v0] Error creating payment:", paymentError)
+    } else {
+      console.log("[v0] Payment created successfully with amount:", betValue)
     }
 
     setSelectedPlayer("")

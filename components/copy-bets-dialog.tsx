@@ -58,10 +58,17 @@ export function CopyBetsDialog({
     setOpen(isOpen)
     if (isOpen) {
       await loadRounds()
-      const { data: round } = await supabase.from("rounds").select("bet_value").eq("id", currentRoundId).single()
+      console.log("[v0] CopyBetsDialog opened, fetching bet_value for round:", currentRoundId)
+      const { data: round, error } = await supabase.from("rounds").select("bet_value").eq("id", currentRoundId).single()
+
+      console.log("[v0] Round data fetched:", round)
+      console.log("[v0] Fetch error:", error)
 
       if (round?.bet_value) {
+        console.log("[v0] Setting betValue to:", round.bet_value)
         setBetValue(round.bet_value)
+      } else {
+        console.log("[v0] No bet_value found, using default 5.0")
       }
     } else {
       setSelectedRoundId("")
@@ -130,6 +137,7 @@ export function CopyBetsDialog({
 
     try {
       console.log("[v0] Starting to copy bets from round:", selectedRoundId, "to:", currentRoundId)
+      console.log("[v0] Using bet_value for payments:", betValue)
 
       const { data: existingBets, error: checkError } = await supabase
         .from("bets")
@@ -167,10 +175,14 @@ export function CopyBetsDialog({
         amount: betValue,
       }))
 
+      console.log("[v0] Creating payments with amount:", betValue, "for", paymentsToInsert.length, "bets")
+
       const { error: paymentsError } = await supabase.from("payments").insert(paymentsToInsert)
 
       if (paymentsError) {
         console.error("[v0] Error creating payments:", paymentsError)
+      } else {
+        console.log("[v0] Payments created successfully")
       }
 
       setOpen(false)
