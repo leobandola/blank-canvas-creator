@@ -1,6 +1,8 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
+import type React from "react"
+
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -9,59 +11,63 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus } from 'lucide-react';
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from 'next/navigation';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Plus } from "lucide-react"
+import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function CreateRoundDialog() {
-  const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     lottery_type: "quina" as "quina" | "mega_sena",
     payment_deadline: "",
     round_start_date: "",
-  });
-  const router = useRouter();
-  const supabase = createClient();
+  })
+  const router = useRouter()
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    setIsLoading(true)
 
-    const { error } = await supabase.from("rounds").insert([
-      {
-        name: formData.name,
-        lottery_type: formData.lottery_type,
-        status: "active",
-        start_date: new Date().toISOString(),
-        payment_deadline: formData.payment_deadline || null,
-        round_start_date: formData.round_start_date || null,
-      },
-    ]);
+    try {
+      console.log("[v0] Creating round with data:", formData)
 
-    if (error) {
-      console.error("Error creating round:", error);
-      alert("Erro ao criar rodada: " + error.message);
-    } else {
-      setFormData({ name: "", lottery_type: "quina", payment_deadline: "", round_start_date: "" });
-      setOpen(false);
-      router.refresh();
+      const { error } = await supabase.from("rounds").insert([
+        {
+          name: formData.name,
+          lottery_type: formData.lottery_type,
+          status: "active",
+          start_date: new Date().toISOString(),
+          payment_deadline: formData.payment_deadline || null,
+          round_start_date: formData.round_start_date || null,
+        },
+      ])
+
+      if (error) {
+        console.error("[v0] Error creating round:", error)
+        alert("Erro ao criar rodada: " + error.message)
+        setIsLoading(false)
+        return
+      }
+
+      console.log("[v0] Round created successfully")
+      setFormData({ name: "", lottery_type: "quina", payment_deadline: "", round_start_date: "" })
+      setOpen(false)
+      router.refresh()
+    } catch (err) {
+      console.error("[v0] Unexpected error creating round:", err)
+      alert("Erro inesperado ao criar rodada. Tente novamente.")
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false);
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -75,9 +81,7 @@ export function CreateRoundDialog() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Criar Nova Rodada</DialogTitle>
-            <DialogDescription>
-              Crie uma nova rodada de apostas para o bolão.
-            </DialogDescription>
+            <DialogDescription>Crie uma nova rodada de apostas para o bolão.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -85,9 +89,7 @@ export function CreateRoundDialog() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Rodada Janeiro 2025"
                 required
               />
@@ -96,9 +98,7 @@ export function CreateRoundDialog() {
               <Label htmlFor="lottery_type">Tipo de Loteria *</Label>
               <Select
                 value={formData.lottery_type}
-                onValueChange={(value: "quina" | "mega_sena") =>
-                  setFormData({ ...formData, lottery_type: value })
-                }
+                onValueChange={(value: "quina" | "mega_sena") => setFormData({ ...formData, lottery_type: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -115,9 +115,7 @@ export function CreateRoundDialog() {
                 id="payment_deadline"
                 type="date"
                 value={formData.payment_deadline}
-                onChange={(e) =>
-                  setFormData({ ...formData, payment_deadline: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, payment_deadline: e.target.value })}
               />
             </div>
             <div className="grid gap-2">
@@ -126,9 +124,7 @@ export function CreateRoundDialog() {
                 id="round_start_date"
                 type="date"
                 value={formData.round_start_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, round_start_date: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, round_start_date: e.target.value })}
               />
             </div>
           </div>
@@ -140,5 +136,5 @@ export function CreateRoundDialog() {
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
