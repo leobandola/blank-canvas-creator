@@ -28,6 +28,7 @@ export function CreateRoundDialog() {
     lottery_type: "quina" as "quina" | "mega_sena",
     payment_deadline: "",
     round_start_date: "",
+    bet_value: "5.00",
   })
   const router = useRouter()
   const supabase = createClient()
@@ -47,6 +48,7 @@ export function CreateRoundDialog() {
           start_date: new Date().toISOString(),
           payment_deadline: formData.payment_deadline || null,
           round_start_date: formData.round_start_date || null,
+          bet_value: Number.parseFloat(formData.bet_value) || 5.0,
         },
       ])
 
@@ -58,7 +60,7 @@ export function CreateRoundDialog() {
       }
 
       console.log("[v0] Round created successfully")
-      setFormData({ name: "", lottery_type: "quina", payment_deadline: "", round_start_date: "" })
+      setFormData({ name: "", lottery_type: "quina", payment_deadline: "", round_start_date: "", bet_value: "5.00" })
       setOpen(false)
       router.refresh()
     } catch (err) {
@@ -108,6 +110,19 @@ export function CreateRoundDialog() {
                   <SelectItem value="mega_sena">Mega Sena (1-60)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="bet_value">Valor da Aposta (R$) *</Label>
+              <Input
+                id="bet_value"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={formData.bet_value}
+                onChange={(e) => setFormData({ ...formData, bet_value: e.target.value })}
+                placeholder="5.00"
+                required
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="payment_deadline">Data Limite de Pagamento</Label>
