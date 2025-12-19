@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { BetsList } from "@/components/bets-list"
 import { CreateBetDialog } from "@/components/create-bet-dialog"
 import { CopyBetsDialog } from "@/components/copy-bets-dialog"
+import { UpdatePaymentsValueButton } from "@/components/update-payments-value-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -102,6 +103,7 @@ export default async function RoundDetailPage({ params }: { params: Promise<{ id
 
                 {user && round.status === "active" && (
                   <div className="flex gap-2 flex-wrap">
+                    <UpdatePaymentsValueButton roundId={id} betValue={round.bet_value || 5} />
                     <CopyBetsDialog
                       currentRoundId={id}
                       currentRoundName={round.name}
