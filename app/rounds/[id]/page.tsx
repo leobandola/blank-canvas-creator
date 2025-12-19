@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { BetsList } from "@/components/bets-list"
 import { CreateBetDialog } from "@/components/create-bet-dialog"
+import { CopyBetsDialog } from "@/components/copy-bets-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -75,7 +76,7 @@ export default async function RoundDetailPage({
                     </Badge>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button asChild variant="outline">
                     <Link href={`/rounds/${id}/report`}>
                       <FileText className="h-4 w-4 mr-2" />
@@ -89,7 +90,14 @@ export default async function RoundDetailPage({
                     </Link>
                   </Button>
                   {user && round.status === "active" && (
-                    <CreateBetDialog roundId={id} players={players || []} lotteryType={round.lottery_type} />
+                    <>
+                      <CopyBetsDialog
+                        currentRoundId={id}
+                        currentRoundName={round.name}
+                        lotteryType={round.lottery_type}
+                      />
+                      <CreateBetDialog roundId={id} players={players || []} lotteryType={round.lottery_type} />
+                    </>
                   )}
                 </div>
               </div>
