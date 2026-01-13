@@ -11,14 +11,15 @@ export function createClient() {
     return globalThis.__supabase_client__
   }
 
+  // Nosso sistema usa autenticação customizada com tabela admins e cookies
   const client = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
+        persistSession: false, // Desabilita persistência de sessão
+        autoRefreshToken: false, // Desabilita refresh automático de token
+        detectSessionInUrl: false, // Não detecta sessão na URL
       },
     },
   )
