@@ -11,8 +11,17 @@ export function createClient() {
     return globalThis.__supabase_client__
   }
 
-  // Cria nova instância apenas uma vez
-  const client = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  const client = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    },
+  )
 
   // Armazena no global para reutilização
   if (typeof window !== "undefined") {
