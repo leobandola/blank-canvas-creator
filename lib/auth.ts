@@ -31,7 +31,24 @@ export async function signIn(email: string, password: string) {
 
     console.log("[v0] Attempting login for:", email)
 
-    const { data: admin, error } = await supabase.from("admins").select("*").eq("email", email).single()
+    let admin, error
+    try {
+      const result = await supabase.from("admins").select("*").eq("email", email).single()
+      admin = result.data
+      error = result.error
+    } catch (queryError: any) {
+      console.error("[v0] Supabase query exception:", queryError)
+
+      // Detect if it's a JSON parse error (usually means Supabase is paused or unreachable)
+      if (queryError.message?.includes("JSON.parse") || queryError.message?.includes("unexpected character")) {
+        return {
+          error:
+            "⚠️ Projeto Supabase está pausado ou inacessível. Por favor, reative o projeto no dashboard do Supabase (https://supabase.com/dashboard) e tente novamente.",
+        }
+      }
+
+      return { error: `Erro de conexão com banco de dados: ${queryError.message}` }
+    }
 
     console.log("[v0] Admin query result:", {
       admin: admin ? "found" : "not found",
@@ -50,7 +67,7 @@ export async function signIn(email: string, password: string) {
       ) {
         return {
           error:
-            "Erro ao buscar usuário: Could not find the table 'public.admins' in the schema cache. Execute o script SQL de criação da tabela admins no banco de dados.",
+            "Erro: Tabela 'admins' não encontrada. Execute o script SQL de criação da tabela admins no banco de dados.",
         }
       }
 
