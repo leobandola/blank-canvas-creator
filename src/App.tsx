@@ -1,22 +1,22 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "sonner";
-import Layout from "@/src/Layout";
-import HomePage from "@/src/pages/HomePage";
-import PlayersPage from "@/src/pages/PlayersPage";
-import RoundsPage from "@/src/pages/RoundsPage";
-import RoundDetailPage from "@/src/pages/RoundDetailPage";
-import RoundReportPage from "@/src/pages/RoundReportPage";
-import ClosureReportPage from "@/src/pages/ClosureReportPage";
-import DrawsPage from "@/src/pages/DrawsPage";
-import DrawDetailPage from "@/src/pages/DrawDetailPage";
-import DrawResultsPage from "@/src/pages/DrawResultsPage";
-import PrizesPage from "@/src/pages/PrizesPage";
-import PrizesDetailPage from "@/src/pages/PrizesDetailPage";
-import BackupPage from "@/src/pages/BackupPage";
-import LoginPage from "@/src/pages/LoginPage";
-import SignUpPage from "@/src/pages/SignUpPage";
-import NotFoundPage from "@/src/pages/NotFoundPage";
+import Layout from "@/Layout";
+import HomePage from "@/pages/HomePage";
+import PlayersPage from "@/pages/PlayersPage";
+import RoundsPage from "@/pages/RoundsPage";
+import RoundDetailPage from "@/pages/RoundDetailPage";
+import RoundReportPage from "@/pages/RoundReportPage";
+import ClosureReportPage from "@/pages/ClosureReportPage";
+import DrawsPage from "@/pages/DrawsPage";
+import DrawDetailPage from "@/pages/DrawDetailPage";
+import DrawResultsPage from "@/pages/DrawResultsPage";
+import PrizesPage from "@/pages/PrizesPage";
+import PrizesDetailPage from "@/pages/PrizesDetailPage";
+import BackupPage from "@/pages/BackupPage";
+import LoginPage from "@/pages/LoginPage";
+import SignUpPage from "@/pages/SignUpPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 function App() {
   return (
