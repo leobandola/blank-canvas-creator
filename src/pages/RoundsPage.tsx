@@ -7,7 +7,7 @@ import { Round } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 export default function RoundsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function RoundsPage() {
           <h1 className="text-3xl font-bold mb-1">Rodadas</h1>
           <p className="text-muted-foreground">Gerencie as rodadas ativas e finalizadas</p>
         </div>
-        {user && <CreateRoundDialog onSuccess={fetchRounds} />}
+        {isAdmin && <CreateRoundDialog onSuccess={fetchRounds} />}
       </div>
 
       {loading ? (
@@ -37,7 +37,7 @@ export default function RoundsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <RoundsList rounds={rounds} isAuthenticated={!!user} onRefresh={fetchRounds} />
+        <RoundsList rounds={rounds} isAuthenticated={isAdmin} onRefresh={fetchRounds} />
       )}
     </div>
   );

@@ -12,7 +12,7 @@ import NotFoundPage from "./NotFoundPage";
 
 export default function DrawDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [round, setRound] = useState<any>(null);
   const [draws, setDraws] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ export default function DrawDetailPage() {
                   <Badge variant="outline">{round.lottery_type === "quina" ? "Quina (1-80)" : "Mega Sena (1-60)"}</Badge>
                 </div>
               </div>
-              {user && round.status === "active" && (
+              {isAdmin && round.status === "active" && (
                 <AddDrawDialog roundId={id!} lotteryType={round.lottery_type} nextDrawNumber={(draws[0]?.draw_number || 0) + 1} onSuccess={fetchData} />
               )}
             </div>
@@ -54,7 +54,7 @@ export default function DrawDetailPage() {
           <CardContent><p className="text-muted-foreground">{draws.length} {draws.length === 1 ? "sorteio realizado" : "sorteios realizados"}</p></CardContent>
         </Card>
       </div>
-      <DrawsDetailList draws={draws} roundId={id!} lotteryType={round.lottery_type} isAuthenticated={!!user} onRefresh={fetchData} />
+      <DrawsDetailList draws={draws} roundId={id!} lotteryType={round.lottery_type} isAuthenticated={isAdmin} onRefresh={fetchData} />
     </div>
   );
 }
