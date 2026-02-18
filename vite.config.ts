@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+// Force rebuild - Vite project
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
