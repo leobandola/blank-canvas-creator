@@ -7,7 +7,7 @@ import { Player } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 export default function PlayersPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function PlayersPage() {
           <h1 className="text-3xl font-bold mb-1">Jogadores</h1>
           <p className="text-muted-foreground">Gerencie os participantes do bolão</p>
         </div>
-        {user && <AddPlayerDialog onSuccess={fetchPlayers} />}
+        {isAdmin && <AddPlayerDialog onSuccess={fetchPlayers} />}
       </div>
 
       {loading ? (
@@ -37,7 +37,7 @@ export default function PlayersPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <PlayerList players={players} isAuthenticated={!!user} onRefresh={fetchPlayers} />
+        <PlayerList players={players} isAuthenticated={isAdmin} onRefresh={fetchPlayers} />
       )}
     </div>
   );

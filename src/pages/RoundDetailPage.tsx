@@ -14,7 +14,7 @@ import NotFoundPage from "./NotFoundPage";
 
 export default function RoundDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [round, setRound] = useState<any>(null);
   const [bets, setBets] = useState<any[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -68,7 +68,7 @@ export default function RoundDetailPage() {
                 <Button asChild variant="outline" size="sm">
                   <Link to={`/rounds/${id}/closure`}><FileText className="h-4 w-4 mr-2" />Rel. Fechamento</Link>
                 </Button>
-                {user && round.status === "active" && (
+                {isAdmin && round.status === "active" && (
                   <CreateBetDialog roundId={id!} players={players} lotteryType={round.lottery_type} onSuccess={fetchData} />
                 )}
               </div>
@@ -83,7 +83,7 @@ export default function RoundDetailPage() {
         </Card>
       </div>
 
-      <BetsList bets={bets} roundId={id!} isAuthenticated={!!user} lotteryType={round.lottery_type} onRefresh={fetchData} />
+      <BetsList bets={bets} roundId={id!} isAuthenticated={isAdmin} lotteryType={round.lottery_type} onRefresh={fetchData} />
     </div>
   );
 }

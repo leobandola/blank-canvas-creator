@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { TrendingUp, Loader2 } from "lucide-react";
 
 export default function DrawsPage() {
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
   const [rounds, setRounds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,7 @@ export default function DrawsPage() {
                     </div>
                   </div>
                   <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                    <Link to={`/draws/${round.id}`}><TrendingUp className="h-4 w-4 mr-2" />{round.status === "active" && user ? "Gerenciar" : "Ver"} Sorteios</Link>
+                    <Link to={`/draws/${round.id}`}><TrendingUp className="h-4 w-4 mr-2" />{round.status === "active" && isAdmin ? "Gerenciar" : "Ver"} Sorteios</Link>
                   </Button>
                 </div>
               </CardHeader>
