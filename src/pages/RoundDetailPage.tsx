@@ -23,7 +23,7 @@ export default function RoundDetailPage() {
 
   const fetchData = async () => {
     const { data: roundData, error } = await supabase
-      .from("rounds").select("*").eq("id", id).single();
+      .from("rounds").select("*").eq("id", id!).single();
     
     if (error || !roundData) { setNotFound(true); setLoading(false); return; }
     setRound(roundData);

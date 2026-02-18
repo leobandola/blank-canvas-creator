@@ -15,7 +15,7 @@ export default function ClosureReportPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id).single();
+      const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id!).single();
       if (error || !roundData) { setNotFound(true); setLoading(false); return; }
       setRound(roundData);
       const { data: betsData } = await supabase.from("bets").select("*, payments(*)").eq("round_id", id!).order("created_at", { ascending: true });

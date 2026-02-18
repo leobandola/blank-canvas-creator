@@ -15,7 +15,7 @@ export default function RoundReportPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id).single();
+      const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id!).single();
       if (error || !roundData) { setNotFound(true); setLoading(false); return; }
       setRound(roundData);
 

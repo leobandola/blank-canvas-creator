@@ -19,7 +19,7 @@ export default function DrawDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   const fetchData = async () => {
-    const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id).single();
+    const { data: roundData, error } = await supabase.from("rounds").select("*").eq("id", id!).single();
     if (error || !roundData) { setNotFound(true); setLoading(false); return; }
     setRound(roundData);
     const { data: drawsData } = await supabase.from("draws").select("*").eq("round_id", id!).order("draw_number", { ascending: false });

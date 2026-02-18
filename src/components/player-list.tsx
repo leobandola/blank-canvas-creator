@@ -55,7 +55,7 @@ export function PlayerList({ players, isAuthenticated, onRefresh }: { players: P
                   {isMobilePhone(player.phone) ? (<><Smartphone className="h-4 w-4 text-emerald-600" /><span>{player.phone}</span><Badge variant="secondary" className="ml-auto text-xs">Celular</Badge></>) : (<><Phone className="h-4 w-4" /><span>{player.phone}</span></>)}
                 </div>
               )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2"><Calendar className="h-4 w-4" /><span>Cadastrado em {new Date(player.created_at).toLocaleDateString("pt-BR")}</span></div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2"><Calendar className="h-4 w-4" /><span>Cadastrado em {player.created_at ? new Date(player.created_at).toLocaleDateString("pt-BR") : "—"}</span></div>
             </CardContent>
           </Card>
         ))}

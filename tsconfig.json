@@ -19,6 +19,6 @@
       "@/*": ["./src/*", "./*"]
     }
   },
-  "include": ["src", "components", "lib"],
-  "exclude": ["node_modules", "app", "middleware.ts"]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

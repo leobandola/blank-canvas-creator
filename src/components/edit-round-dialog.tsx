@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type Round = { id: string; name: string; lottery_type: "quina" | "mega_sena"; status: string; payment_deadline?: string | null; round_start_date?: string | null };
+type Round = { id: string; name: string; lottery_type: string; status: string; payment_deadline?: string | null; round_start_date?: string | null };
 
 export function EditRoundDialog({ round, onSuccess }: { round: Round; onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
