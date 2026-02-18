@@ -1,6 +1,6 @@
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { RoundsList } from "@/components/rounds-list";
 import { CreateRoundDialog } from "@/components/create-round-dialog";
 import { Round } from "@/lib/types";

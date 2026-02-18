@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DollarSign } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function MarkPaidDialog({ paymentId, onSuccess }: { paymentId: string; onSuccess?: () => void }) {

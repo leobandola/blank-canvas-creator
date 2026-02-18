@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Download, Upload, Database, Lock } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
