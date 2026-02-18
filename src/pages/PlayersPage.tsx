@@ -1,6 +1,6 @@
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { PlayerList } from "@/components/player-list";
 import { AddPlayerDialog } from "@/components/add-player-dialog";
 import { Player } from "@/lib/types";

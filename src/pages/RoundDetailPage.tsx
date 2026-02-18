@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { BetsList } from "@/components/bets-list";
 import { CreateBetDialog } from "@/components/create-bet-dialog";
 import { Button } from "@/components/ui/button";

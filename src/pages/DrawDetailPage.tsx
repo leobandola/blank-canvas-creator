@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { DrawsDetailList } from "@/components/draws-detail-list";
 import { AddDrawDialog } from "@/components/add-draw-dialog";
 import { Button } from "@/components/ui/button";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Trophy, Users, Trash2, Grid3x3, List, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EditRoundDialog } from "./edit-round-dialog";
-import { supabase } from "@/lib/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
