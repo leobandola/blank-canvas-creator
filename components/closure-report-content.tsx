@@ -44,24 +44,14 @@ export function ClosureReportContent({
 
   return (
     <div className="print-content">
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          body {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-          .no-print {
-            display: none !important;
-          }
-          .print-content {
-            width: 100%;
-            max-width: 100%;
-          }
-          @page {
-            margin: 1cm;
-          }
+          body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+          .no-print { display: none !important; }
+          .print-content { width: 100%; max-width: 100%; }
+          @page { margin: 1cm; }
         }
-      `}</style>
+      ` }} />
 
       <Card className="border-amber-200 mb-6">
         <CardHeader className="bg-gradient-to-r from-amber-600 to-red-600 text-white">
