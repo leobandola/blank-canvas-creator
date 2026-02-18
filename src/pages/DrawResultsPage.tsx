@@ -16,7 +16,7 @@ export default function DrawResultsPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data: drawData, error } = await supabase.from("draws").select("*").eq("id", drawId).single();
+      const { data: drawData, error } = await supabase.from("draws").select("*").eq("id", drawId!).single();
       if (error || !drawData) { setNotFound(true); setLoading(false); return; }
       setDraw(drawData);
       const { data: resultsData } = await supabase.from("results").select("*, bet:bets(*, player:players(*))").eq("draw_id", drawId!).order("matches_count", { ascending: false });

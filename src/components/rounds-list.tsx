@@ -69,7 +69,7 @@ export function RoundsList({ rounds, isAuthenticated, onRefresh }: { rounds: Rou
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>Criada: {new Date(round.start_date).toLocaleDateString("pt-BR")}</span></div>
+                <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>Criada: {round.start_date ? new Date(round.start_date).toLocaleDateString("pt-BR") : "—"}</span></div>
                 {round.payment_deadline && <div className="flex items-center gap-2"><DollarSign className="h-4 w-4" /><span>Pagamento até: {new Date(round.payment_deadline).toLocaleDateString("pt-BR")}</span></div>}
                 {round.round_start_date && <div className="flex items-center gap-2"><Trophy className="h-4 w-4" /><span>Início: {new Date(round.round_start_date).toLocaleDateString("pt-BR")}</span></div>}
                 {round.end_date && <div className="flex items-center gap-2"><Trophy className="h-4 w-4" /><span>Fim: {new Date(round.end_date).toLocaleDateString("pt-BR")}</span></div>}
